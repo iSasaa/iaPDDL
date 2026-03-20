@@ -1,0 +1,871 @@
+Planificació amb IA, una
+  introducció aplicada
+      Part II, Resolució amb cerca
+
+  Joan Espasa Arxer & Mateu Villaret
+  University of St Andrews & Universitat de Girona
+
+
+                  March 12, 2026
+
+
+
+
+                                                     1 / 45
+La planificació com a cerca
+
+
+Destaquem tres mètodes generals per resoldre classical planning:
+ 1. Cerca explícita
+       •   Conceptualment simple d’entendre
+       •   Cada estat individual es representa i s’explora per separat
+       •   La cerca avança generant i avaluant els estats un per un
+       •   Acull moltes heurístiques i mètodes de guia
+       •   decisions: direcció de la cerca, algorisme de cerca,
+           control de la cerca (incl. heurístiques)
+
+
+
+
+                                                                         2 / 45
+La planificació com a cerca
+Destaquem tres mètodes generals per resoldre classical planning:
+ 1. Cerca explícita
+       • decisions: direcció de la cerca, algorisme de cerca,
+         control de la cerca (incl. heurístiques)
+ 2. Planificació com a satisfactibilitat (SAT/CP/SMT/...):
+       • Redueix els problemes a una seqüència queries sobre fórmules
+         lògiques
+       • Cada fórmula és satisfactible si i només si existeix un pla d’una
+         longitud específica
+       • Aprofita els avenços resolutors de problemes combinatoris
+       • “Incapaç” de demostrar la no-existència d’un pla o l’optimalitat
+         general
+       • decisions: Codificació del problema, solucionador combinatori,
+         estratègia d’avaluació
+
+Però, com es redueix el problema de planificació PSPACE-complet al
+problema NP-complet de SAT?
+Fent consultes iteratives de “hi ha un pla de longitud n?”
+                                                                             3 / 45
+La planificació com a cerca
+Destaquem tres mètodes generals per resoldre classical planning:
+ 1. Cerca explícita
+       • decisions: direcció de la cerca, algorisme de cerca,
+         control de la cerca (incl. heurístiques)
+ 2. Planificació com a satisfactibilitat (SAT/CP/SMT/...)
+       • decisions: codificació del problema, solucionador combinatori,
+         estratègia d’avaluació
+ 3. Cerca simbòlica:
+       • Representa i manipula conjunts d’estats de manera simbòlica
+       • Pot representar conjunts exponencialment grans d’estats utilitzant
+         estructures de dades compactes (com els BDDs)
+       • El rendiment és sensible al problema i a les estructures de dades
+         utilitzades
+       • decisions: estructura de dades simbòlica + les mateixes que per
+         a la cerca explícita
+
+                                                                              4 / 45
+La planificació com a cerca: Les 3 grans
+
+Destaquem tres mètodes generals per resoldre classical planning:
+  • Cerca explícita
+       • decisions: direcció de la cerca, algorisme de cerca,
+         control de la cerca (incl. heurístiques)
+  • Planificació com a satisfactibilitat (SAT/CP/SMT/...)
+       • decisions: codificació del problema, solucionador combinatori,
+         estratègia d’avaluació
+  • Cerca simbòlica
+       • decisions: estructura de dades simbòlica
+         + les mateixes que per a la cerca explícita
+
+
+                 Ens centrarem en la cerca explícita
+
+
+                                                                          5 / 45
+Cerca explícita                  Moltes opcions de
+disseny!
+Direcció de la cerca
+  • progressió: endavant, de l’estat inicial cap a l’objectiu
+  • regressió: enrere, dels estats objectiu cap a l’estat inicial
+  • cerca bidireccional: endavant i enrere al mateix temps
+
+
+
+
+                                                                    6 / 45
+Cerca explícita                  Moltes opcions de
+disseny!
+Direcció de la cerca
+  • progressió: endavant, de l’estat inicial cap a l’objectiu
+  • regressió: enrere, dels estats objectiu cap a l’estat inicial
+  • cerca bidireccional: endavant i enrere al mateix temps
+
+Algorisme de cerca
+  • cerca no informada: en profunditat, en amplada, …
+  • cerca heurística (sistemàtica): greedy best-first, A∗ ,IDA∗ , …
+  • cerca heurística (local): hill-climbing, cerca en feix, …
+
+
+
+
+                                                                      6 / 45
+Cerca explícita                  Moltes opcions de
+disseny!
+Direcció de la cerca
+  • progressió: endavant, de l’estat inicial cap a l’objectiu
+  • regressió: enrere, dels estats objectiu cap a l’estat inicial
+  • cerca bidireccional: endavant i enrere al mateix temps
+
+Algorisme de cerca
+  • cerca no informada: en profunditat, en amplada, …
+  • cerca heurística (sistemàtica): greedy best-first, A∗ ,IDA∗ , …
+  • cerca heurística (local): hill-climbing, cerca en feix, …
+
+Control de la cerca
+  • heurístiques per a algorismes de cerca informats
+  • tècniques de poda: invariants, eliminació de simetries, reducció
+    d’ordre parcial, poda d’accions útils, …
+                                                                       6 / 45
+Mida de l’espai d’estats
+Considerem els 3 predicats a Hanoi:
+smaller ( , ), clear ( ), on( , )
+Cada assignació possible de valors representa un estat.
+Mida de l’espai d’estats
+  • 6 objectes (3 pals i 3 discos)
+  • que ens donen 26 combinacions de clear (    )
+  • i 26∗6 combinacions de on( , )
+  • i 26∗6 combinacions de smaller ( ,    )
+
+Donant-nos un total de: 278 ≈ 3 × 1023 combinacions
+
+
+El nombre d’estats accessibles és menor, però encara així, poder fer
+cerca guiada és essencial.
+                                                                       7 / 45
+Recordant l’esquema general de la cerca
+
+Algorithm 1 Una manera genèrica de formalitzar la cerca
+ 1: Inicialitza la llista open amb l’estat inicial
+ 2: while open no és buida do
+ 3:    Tria i elimina de la llista open el node que considerem millor
+ 4:    if node conté el goal then
+ 5:       return una solució
+ 6:    end if
+ 7:    Troba tots els nodes veïns als quals es pot arribar en un sol pas
+ 8:    Afegeix aquests nodes a la llista open
+ 9: end while
+10: return error (no s’ha trobat cap solució)
+
+
+
+
+                                                                           8 / 45
+Cerca endavant vs. cerca enrere
+
+Cercar en tasques de planificació cap endavant o cap enrere
+no és simètric:
+  • la cerca endavant comença des d’un únic estat inicial;
+     la cerca enrere comença des d’un conjunt d’estats objectiu
+  • quan s’aplica una acció a en un estat s en la direcció endavant,
+     hi ha un únic estat successor s 0 ;
+     d’altra banda, si acabem en l’estat s 0 després d’aplicar l’acció a,
+     poden existir diversos possibles estats predecessors s, com
+     per exemple l’estat inicial.
+   en la representació més natural per a la cerca enrere en
+planificació, cada estat de cerca correspon a un conjunt d’estats del
+món
+
+
+                                                                            9 / 45
+Planificació per cerca enrere: Regressió
+Regressió: Càlcul dels possibles estats predecessors regr(G 0 , a) d’un
+conjunt d’estats G 0 (“subobjectiu”) donada l’última acció a que
+s’ha aplicat.
+
+Els planificadors per regressió troben solucions mitjançant la cerca
+enrere:
+  • comencen des d’un conjunt d’estats objectiu
+  • seleccionen iterativament un subobjectiu (conjunt d’estats)
+    generat prèviament i el fan “regressar” a través d’una acció,
+    generant un nou subobjectiu
+  • es troba una solució quan un subobjectiu generat inclou
+    l’estat inicial
+
+Pro: pot gestionar molts estats simultàniament
+Contra: les operacions bàsiques són complexes i costoses
+                                                                          10 / 45
+Representació de l’espai de cerca en
+planificadors per regressió
+
+
+Identificació de conjunts d’estats amb fórmules lògiques (de nou):
+  • cada estat de cerca correspon a un conjunt d’estats del món
+     (“subobjectiu”)
+  • cada estat de cerca es representa mitjançant una fórmula
+     lògica: G representa {s ∈ S | s |= G}
+  • moltes operacions bàsiques de cerca, com la detecció de
+     duplicats, són NP-completes o coNP-completes
+
+
+
+
+                                                                     11 / 45
+Espai de cerca per a la regressió
+Espai de cerca per a la regressió
+Considerem el problema de planificació Π = hAtoms, s0 , G, Ai (els
+estats de la cerca són fórmules G 0 que descriuen conjunts d’estats del
+món; les transicions de l’espai de cerca són accions a ∈ A)
+  • init()            retorna G
+  • is_goal(G 0 )     comprova si s0 |= G 0 (per STRIPS G 0 ⊆ s0 )
+  • succ(G 0 )        retorna tots els parells ha, regr(G 0 , a)i
+                      on a ∈ A i regr(G 0 , a) està definit
+  • cost(a)           retorna cost(a) tal com està definit en Π
+  • h(G 0 )           estima el cost de s0 a G 0
+
+Cost de les accions
+Estem assumint que cada acció a ∈ A té un cost associat.
+De vegades, el cost és 1 i la mètrica del pla és la seva longitud.
+                                                                          12 / 45
+Exemple de planificació amb regressió
+(Depth-first Search)
+
+
+
+
+                                        13 / 45
+Exemple de planificació amb regressió
+(Depth-first Search)
+
+                                 G
+
+
+
+
+                                        13 / 45
+Exemple de planificació amb regressió
+(Depth-first Search)
+    G1 = regr(G, −→)        G1   G
+
+
+
+
+                                        13 / 45
+Exemple de planificació amb regressió
+(Depth-first Search)
+    G1 = regr(G, −→)     G2   G1   G
+    G2 = regr(G1 , −→)
+
+
+
+
+                                        13 / 45
+Exemple de planificació amb regressió
+(Depth-first Search)
+    G1 = regr(G, −→)       G3     G2   G1   G
+    G2 = regr(G1 , −→)
+    G3 = regr(G2 , −→), I |= G3
+
+
+
+
+                                                13 / 45
+Regressió per a planificació STRIPS
+La regressió per a planificació STRIPS és més senzilla que el cas
+general:
+  • Considera el subobjectiu G 0 que és un conjunt d’àtoms
+     {at1 , . . . , atn } (per exemple, l’objectiu original del problema).
+  • Primer pas: Tria una acció a = hPre, hEff + , Eff − ii tal que
+     ∀i ∈ 1..n. ati 6∈ Eff − . Si és l’última acció no pot eliminar
+     quelcom que es demana!
+  • Segon pas: Elimina de G 0 els àtom de Eff + .
+  • Tercer pas: Afegeix Pre a la nova G 0 garantint que a fos
+     aplicable.
+     El resultat d’això és la regressió de G 0 respecte l’acció a.
+     Novament, és un conjunt d’àtoms.
+
+Optimització:
+Només considerarem accions rellevants: que afegeixin almenys un ati
+                                                                             14 / 45
+Regressió STRIPS
+
+
+Definition (Regressió STRIPS)
+Sigui G 0 = {at1 , . . . , atn } un conjunt d’àtoms representant un conjunt
+d’estats, i sigui a = hPre, hEff + , Eff − ii una acció.
+La regressió STRIPS de G 0 respecte a a és
+
+                                        si ati ∈ Eff − per a algun i,
+                  (
+                   ⊥
+  sregr(G , a) :=
+          0
+                   (G 0 \ Eff + ) ∪ Pre en cas contrari
+
+Nota: sregr(G 0 , a) és novament un conjunt d’àtoms, o ⊥.
+
+
+
+
+                                                                          15 / 45
+Cerca cap enrere per Hanoi3 (i)
+
+Hanoi 3 amb regressió
+G = { on(d1 , d2 ) , on(d2 , d3 ), on(d3 , p3 )}
+
+ move(d1 , p1 , d2 ) =      h{on(d1 , p1 ), clear (d1 ), smaller (d1 , d2 ), clear (d2 )},
+                              h{on(d1 , d2 ), clear (p1 )}, {clear (d2 ), on(d1 , p1 )}ii
+
+   • Podem aplicar aquesta acció perquè
+     {clear (d2 ), on(d1 , p1 )} ∩ G = ∅.
+   • Esborrem on(d1 , d2 ) perquè apareix a Eff + .
+   • Afegim {on(d1 , p1 ), clear (d1 ), smaller (d1 , d2 ), clear (d2 )} perquè
+     són la precondició de l’acció.
+G 0 = sregr G, move(d1 , p1 , d2 ) =
+                                     
+
+   on(d1 , p1 ), clear (d1 ), smaller (d1 , d2 ), clear (d2 ), on(d2 , d3 ), on(d3 , p3 )
+
+
+
+                                                                                             16 / 45
+Cerca cap enrere per Hanoi3 (ii)
+Hanoi 3 amb regressió
+G0 =
+{on(d1 , p1 ), clear (d1 ), smaller (d1 , d2 ), clear (d2 ), on(d2 , d3 ) , on(d3 , p3 )}
+
+ move(d2 , p2 , d3 ) =  h{on(d2 , p2 ), clear (d2 ), smaller (d2 , d3 ), clear (d3 )},
+                           h{on(d2 , d3 ), clear (p2 )}, {clear (d3 ), on(d2 , p2 )}ii
+G 00
+       sregr G 0
+                   move(d    p    d
+                                        
+    =           ,       2 ,  2 ,   3 )   =                                 
+ on(d2 , p2 ), clear (d2 ) , smaller (d2 , d3 ), clear (d3 ),              
+ on(d1 , p1 ) , clear (d1 ), smaller (d1 , d2 ), clear (p2 ), on(d3 , p3 ) 
+ move(d1 , d2 , p1 ) =      h{on(d1 , d2 ), clear (d1 ), smaller (d1 , p1 ), clear (p1 )},
+                              h{on(d1 , p1 ), clear (d2 )}, {clear (p1 ), on(d1 , d2 )}ii
+G
+ = sregr G , move(d1 , d2 , p1 ) =
+  000              00
+                                          
+
+ on(d1 , d2 ), clear (d1 ), smaller (d1 , p1 ), clear (p1 ) 
+                                                                
+
+     on(d2 , p2 ), smaller (d2 , d3 ), clear (d3 ),
+     clear (d1 ), smaller (d1 , d2 ), clear (p2 ), on(d3 , p3 )
+                                                               
+
+                                             ···                                             17 / 45
+Cerca enrera amb esquemes d’acció
+Quan considerem esquemes d’acció en representació “lifted” podem
+capturar més estats de forma compacte
+Exemple de Petrobras
+Tenim com a objectiu: { (at_ cargo1 F1) , (at_ cargo2 F4) }:
+   1:   (define (domain petrobras) ...
+   2:   (:action unload
+   3:           :parameters (?c - cargo ?p - platform ?sh - ship)
+   4:           :precondition (and
+   5:                            (docked ?sh ?p)
+   6:                            (loaded ?c ?sh))
+   7:           :effect (and
+   8:                        (decrease (current_load ?sh) (weight ?c))
+   9:                        (not (loaded ?c ?sh))
+  10:                        (at_ ?c ?p)) ...
+
+Necessitem l’acció: unload(cargo1, F1, ?sh)
+{ (docked ?sh F1), (loaded cargo1 ?sh), (at_ cargo2 F4) }
+
+                                                                         18 / 45
+Cerca informada cap endavant
+
+
+L’aproximació més exitosa per a classical planning és la cerca
+endavant informada, típicament amb A∗ .
+
+En aquest sentit és crucial trobar heurístics de propòsit general
+d’acord amb la noció d’estat i de transició que estiguem tractant.
+
+El càlcul d’heurístics és un tema de recerca molt extens i complex,
+avui en veurem un tast.
+
+
+
+
+                                                                      19 / 45
+Ingredient 1: Un Algorisme de Cerca
+Revisant el nostre Algorisme de Cerca: què cal canviar?
+
+Algorithm 2 Retorna un pla o fallada (cap solució trobada)
+ 1: Inicialitza una llista open amb l’estat inicial
+ 2: while la llista oberta no estigui buida do
+ 3:    Selecciona i elimina un node bo de la llista open
+ 4:    if el node coincideix amb l’objectiu then
+ 5:       return una solució
+ 6:    end if
+ 7:    Troba tots els nodes veïns que es poden assolir en un únic pas
+ 8:    Afegeix aquests nodes veïns a la llista open
+ 9: end while
+10: return fallada
+
+
+
+                                                                        20 / 45
+Interfície per a Algorismes de Cerca
+Heurística
+
+Interfície Abstracta Necessària per a Algorismes de Cerca
+Heurística
+  • init()          retorna l’estat inicial
+  • is_goal(s)      comprova si s és un estat objectiu
+  • succ(s)         retorna tots els estats successors de s
+  • cost(a)         retorna el cost de l’acció a
+  • h(s)            retorna el valor heurístic per a l’estat s
+
+Recorda que una funció heurística h(s) estima la distància des d’un
+estat s fins a l’objectiu.
+
+
+                                                                      21 / 45
+Revisant el nostre A∗lgorisme de Cerca
+Algorithm 3 Retorna un pla o fallada (cap solució trobada)
+ 1: Inicialitza una llista oberta amb init()
+ 2: while la llista oberta no estigui buida do
+ 3:    Selecciona i elimina de la llista oberta:
+ 4:          l’estat amb menor g(s) + h(s)
+ 5:    if is_goal(s) then
+ 6:       return una solució
+ 7:    end if
+ 8:    Afegeix a la llista oberta:
+ 9:          succ(s) (tots els successors de l’estat actual)
+10: end while
+11: return fallada
+
+  • g(s): el cost real des de l’estat inicial fins a l’estat s
+  • Una taula de cerca per evitar repetir estats
+
+                                                                 22 / 45
+Ingredient 2: Heurística
+
+La realitat és que ni la cerca endavant ni la cerca enrere són eficients
+                   sense una bona funció heurística.
+
+En el nostre cas particular, recordem que A∗ :
+  • amb heurístiques segures obtenim un procediment de cerca
+    complet
+  • amb heurístiques que són admissibles i consistents podem
+    garantir optimalitat en la cerca sense revisitar nodes de cerca
+  • amb heurístiques segures però no admissibles, només obtenim un
+    procediment de cerca complet però sense garantia d’optimalitat;
+    per tant, cal continuar cercant després de trobar una solució si
+    ens importa l’optimalitat
+
+
+                                                                       23 / 45
+Propietats Principals de les Heurístiques
+ Com podem trobar bones heurístiques de manera independent del
+                          domini?
+
+   una de les principals àrees de recerca en planificació clàssica
+
+Propietats de les Heurístiques
+  • heurística h : S → R+ 0 ∪ {∞}
+  • heurística perfecta h∗ : h∗ (s) és el cost de la solució òptima des
+    de s (∞ si no té solució)
+  • propietats de les heurístiques h:
+       •   segura: (h(s) = ∞ ⇒ h∗ (s) = ∞) per a tots els estats s
+       •   conscient de l’objectiu: h(s) = 0 per a tots els estats objectiu s
+       •   admissible: h(s) ≤ h∗ (s) per a tots els estats s
+       •   consistent: h(s) ≤ cost(a) + h(s 0 ) per a totes les transicions amb
+           accions aplicables a en s, t.q. a(s) = s 0
+  • Fixem-nos amb les connexions entre aquestes propietats
+                                                                              24 / 45
+Maneres de calcular heurístiques
+
+
+ • Heurístiques de relaxació: donat un problema de planificació Π
+   i un estat s, es genera una versió relaxada del problema: Π0 i
+   definim amb hrelax (s) = cost(Π0 , s), on cost(Π0 , s) significa el
+   cost de resoldre Π0 de manera òptima considerant s com a estat
+   inicial. En la majoria dels casos, calcular cost(Π0 , s) continua
+   sent molt costós: hdelPre , h+
+   Algunes heurístiques de relaxació es poden calcular més
+   ràpidament a costa de ser menys informatives: hmax , “hadd ”, ...
+ • Abstraccions, Fites (Landmarks), ...
+
+
+
+
+                                                                     25 / 45
+Heurístiques de Relaxació
+Considerem el problema de planificació com un graf, on:
+  • els nodes són estats
+  • les arestes són accions
+el problema consisteix a trobar un camí des de l’estat inicial fins a
+l’estat objectiu.
+Hi ha dues maneres de relaxar aquest problema per fer-lo més fàcil:
+  • afegint més arestes: fent més fàcil trobar un camí
+  • agrupant nodes: deixant menys nodes i, per tant, fent més fàcil
+    la cerca en el graf
+
+Relaxa’t!
+El cost exacte d’una solució a una versió relaxada del problema dona
+lloc a una heurística admissible
+
+                                                                        26 / 45
+Heurística d’Ignorar les Precondicions
+Ignorar les Precondicions: Elimina les precondicions de les accions
+   • Cada acció es pot aplicar en qualsevol estat
+   • És fàcil, però no gaire informativa
+La solució no és simplement “nombre d’àtoms de l’objectiu
+insatisfets” perquè:
+   • Algunes accions poden assolir múltiples àtoms simultàniament
+   • Algunes accions poden desfer els efectes d’altres
+Implementació Pràctica:
+   • Elimina totes les precondicions i conserva només els efectes
+     rellevants per a la meta
+   • Troba el conjunt mínim d’accions que satisfà totes les metes
+     set-cover problem (NP-hard)
+
+Un algorisme voraç [Chv79] pot trobar una solució dins d’un rang
+log n de l’òptim (n = nombre de literals objectiu) però sacrificant la
+garantia d’admissibilitat de l’heurística
+                                                                         27 / 45
+El problema del 8-puzle
+                       1 2 3               1 2 3
+                       5 6 8               4   5
+                       4 7                 6 7 8
+Acció slide per al 8-puzle
+ 1:   (define (domain 8-puzzle)
+ 2:    (:requirements :adl :typing)
+ 3:    (:types tile cell -object)
+ 4:    (:predicates (on ?t - tile ?c - cell) (free ?c -cell)
+ 5:                 (adjacent ?c1 ?c2 - cell))
+ 6:    (:action slide
+ 7:     :parameters (?t - tile ?s1 - cell ?s2 - cell)
+ 8:     :precondition (and (on ?t ?s1) (free ?s2) (adjacent ?s1 ?s2))
+ 9:     :effect (and (on ?t ?s2) (free ?s1)
+10:                   (not (on ?t ?s1)) (not (free ?s2)) ))
+
+h∗ (s0 ) = 8: [slide(7,l32,l33), slide(6,l22,l32),
+slide(5,l21,l22), slide(4,l31,l21), slide(6,l32,l31),
+slide(7,l33,l32), slide(8,l23,l33), slide(5,l22,l23)]
+                                                                        28 / 45
+Pla Il·lustrat
+       1   2   3          1   2   3          1   2   3
+       5   6   8          5   6   8          5       8
+       4   7              4       7          4   6   7
+
+     Estat Inicial    slide(7,l32,l33)   slide(6,l22,l32)
+
+       1   2   3          1   2   3          1   2   3
+           5   8          4   5   8          4   5   8
+       4   6   7              6   7          6       7
+
+   slide(5,l21,l22)   slide(4,l31,l21)   slide(6,l32,l31)
+
+       1   2   3          1   2   3          1   2   3
+       4   5   8          4   5              4       5
+       6   7              6   7   8          6   7   8
+
+   slide(7,l33,l32)   slide(8,l23,l33)   slide(5,l22,l23)
+                                                            29 / 45
+Relaxació del 8-puzle (i)
+
+Podem ser selectius quan eliminem precondicions...
+Eliminació de precondicions per a slide
+  • Eliminant (free ?s2) (adjacent ?s1 ?s2)
+       nombre de peces descol·locades
+  1:   (:action slide
+  2:     :parameters (?t - tile ?s1 - cell ?s2 - cell)
+  3:     :precondition (and (on ?t ?s1) (free ?s2) (adjacent ?s1 ?s2))
+  4:     :effect (and (on ?t ?s2) (free ?s1)
+  5:                  (not (on ?t ?s1)) (not (free ?s2)) ))
+
+Un pla òptim seria: [slide(4,l31,l21), slide(5,l21,l23),
+slide(6,l22,l31), slide(8,l23,l33)]
+Per tant, hmisplaced (s0 ) = 4.
+
+
+                                                                         30 / 45
+Pla Relaxat Il·lustrat
+
+     1   2    3         1    2   3         1   2   3
+
+     5   6    8         45   6   8         4   6   58
+
+     4   7                   7                 7
+
+    Estat Inicial    slide(4,l31,l21)   slide(5,l21,l23)
+
+
+     1   2    3         1    2   3
+
+     4        58        4        5
+
+     6   7              6    7   8
+
+  slide(6,l22,l31)   slide(8,l23,l33)
+
+
+
+
+                                                           31 / 45
+Relaxació del 8-puzle (ii)
+Eliminació de precondicions per a slide
+  • Eliminant (free ?s2)
+       suma de les distàncies de Manhattan de les peces
+  1:   (:action slide
+  2:     :parameters (?t - tile ?s1 - cell ?s2 - cell)
+  3:     :precondition (and (on ?t ?s1) (free ?s2) (adjacent ?s1 ?s2))
+  4:     :effect (and (on ?t ?s2) (free ?s1)
+  5:                  (not (on ?t ?s1)) (not (free ?s2)) ))
+
+Un pla òptim seria: [slide(4,l31,l21), slide(5,l21,l22),
+slide(5,l22,l23),slide(6,l22,l32),
+slide(6,l21,l31),slide(8,l23,l33)]
+Per tant, hmanhattan (s0 ) = 6.
+
+Pregunta
+Com de bo seria eliminar només (adjacent ?s1 ?s2)?
+                                                                         32 / 45
+Pla Il·lustrat
+       1   2   3          1   2    3         1   2   3
+       5   6   8          45 6     8         4 56 8
+       4   7                  7                  7
+
+     Estat Inicial    slide(4,l31,l21)   slide(5,l21,l22)
+
+       1   2   3          1   2    3         1   2   3
+       4   6 58           4        58        4       58
+           7                  67             6   7
+
+   slide(5,l22,l23)   slide(6,l21,l31)   slide(6,l32,l31)
+
+       1   2   3
+       4       5
+       6   7   8
+
+   slide(8,l23,l33)
+                                                            33 / 45
+L’Heurística h+
+ • En el marc de problems STRIPS (és a dir sense precondicions
+   negatives), podem fer la següent Relaxació: Crea un problema
+   de planificació relaxat eliminant les delete lists (literals negatius
+   dels efectes) [Hof05]
+ • Propietats:
+      •   Permet un progrés monòton cap als objectius
+      •   Quan es calcula de manera òptima, és consistent
+      •   Cap acció desfà el progrés fet per una altra acció
+      •   Elimina els camins sense sortida i la necessitat de fer backtrack
+ • Aspectes Computacionals:
+      • Trobar la solució òptima en el problema relaxat segueix sent
+        NP-hard! [Byl94]
+      • Solució aproximada mitjançant hill-climbing en temps polinòmic
+      • La longitud de la solució resultant serveix com una bona
+        heurística admissible
+     Una cerca de hill-climbing pot trobar solucions fàcilment
+            (encara que no necessàriament òptimes)
+                                                                              34 / 45
+Relaxant el problema del 8-puzle (iii)
+Eliminant els efectes negatius de slide
+  • Eliminant (not (on ?t ?s1)) (not (free ?s2))
+       propietats d’estat monòtonament creixents
+  1:   (:action slide
+  2:    :parameters (?t - tile ?s1 - cell ?s2 - cell)
+  3:    :precondition (and (on ?t ?s1) (free ?s2) (adjacent ?s1 ?s2))
+  4:    :effect (and (on ?t ?s2) (free ?s1)
+  5:                  (not (on ?t ?s1)) (not (free ?s2)) ))
+
+Un pla òptim seria: [slide(7,l32,l33), slide(6,l22,l32),
+slide(5,l21,l22), slide(4,l31,l21), slide(6,l32,l31),
+slide(7,l33,l32), slide(8,l23,l33), slide(5,l22,l23)]
+Per tant h+ (s0 ) = 7.
+
+Pregunta
+Com de bo seria eliminar només (adjacent ?s1 ?s2)?
+                                                                        35 / 45
+Pla Il·lustrat
+       1   2   3          1   2   3          1   2   3
+       5   6   8          5   6   8          5   6   8
+       4   7              4   7   7          4 67 7
+
+     Initial State    slide(7,l32,l33)   slide(6,l22,l32)
+
+       1   2   3          1   2   3          1   2   3
+       5 56 8             45 56 8            45 56 8
+       4 67 7             4 67 7             46 67 7
+
+   slide(5,l21,l22)   slide(4,l31,l21)   slide(6,l32,l31)
+
+       1   2   3          1   2   3
+       45 56 8            45 56 58
+       46 67 78           46 67 78
+
+   slide(8,l23,l33)   slide(5,l22,l23)
+                                                            36 / 45
+L’Heurística hmax
+Atès que l’heurística del pla relaxat òptim h+ és informativa però
+NP-hard, hmax [BG99] relaxa h+
+hmax : Assumeix que és suficient aconseguir el subobjectiu més
+costós en el conjunt d’objectius g ∈ G del problema relaxat
+d’h+ .
+  • Propietats:
+       • sempre és optimista: hmax ≤ h+ i per tant h+ només pot ser més
+         car
+       • Es pot calcular en temps polinòmic en el nombre de variables
+       • és admissible i consistent
+       • no és molt informatiu, especialment amb múltiples objectius que
+         interactuen entre ells
+       • es pot veure com un cas especial d’una heurística de camí crític:
+         hm [GH00] on m = 1
+
+                                                                             37 / 45
+El problem del puzle de 8
+ • hmax (s0 ) = 4 cost màxim del cost mínim de col·locar una fitxa
+   al seu lloc. En aquest cas les més costoses són 4, 5 i 6.
+
+     1   2   3            1   2   3              1   2   3
+     5   6   8            5   6   8              5   6   8
+     4   7                4   7   7              4 67 7
+
+   Initial State    slide(7,l32,l33)        slide(6,l22,l32)
+
+     1   2   3            1   2   3
+     5   6   8            5   6   8
+     4 467 7             46 467 7         Exemple de posar
+                                          la 6 a lloc en 4 passos
+slide(4,l31,l32)    slide(6,l32,l31)
+
+
+                                                                     38 / 45
+L’Heurística Additiva hadd
+hadd [BLG97]: També relaxa h+ . És pessimista en suposar que hem
+d’aconseguir cada g ∈ G separadament
+  • hadd ≥ h+ per a totes les tasques
+  • Es calcula eficientment en un temps polinòmic en el nombre de
+     variables d’estat
+  • no és admissible ni consistent. Sobrepassarem el pla òptim quan
+     una acció pugui beneficiar més d’un objectiu!
+  • opció molt millor quan necessitem trobar un pla qualsevol, ja que
+     és més informativa
+8-puzle
+hadd (s0 ) és la suma del cost per moure cada fitxa a la seva posició final en el
+problema relaxat: les fitxes {1,2,3} requereixen 0 passos, les fitxes 4, 6 i 6
+en necessiten 4 cadascuna, la fitxa 7 cap i la fitxa 8 en necessita 1.
+
+               hadd (s0 ) = 0 + 0 + 0 + 4 + 4 + 4 + 0 + 1 = 13
+
+                                                                                39 / 45
+hmax vs hadd
+
+
+  • hmax sovint és inexacta perquè compta per sota: l’estimació
+    heurística només reflecteix el cost d’un camí crític, que sovint és
+    només una petita fracció del pla global.
+  • hadd sovint és inexacta perquè compta en excés: si s’arriba al
+    mateix subproblema de moltes maneres, es comptarà moltes
+    vegades encara que només calgui resoldre’l una vegada.
+
+L’heurística hFF [HN01] (no admissible) va apareixer un xic més tard i
+va combinar ambdues mitjançant representació relaxada del graf de
+transicions …
+
+
+
+                                                                          40 / 45
+Resum
+ • Els problemes de planificació es poden abordar amb diferents
+   mètodes, cadascun amb compromisos diferents
+ • La cerca cap endavant i cap enrere són asimètriques
+ • Atès com creix l’espai d’estats, la guia és essencial
+ • Es poden derivar heurístiques efectives a partir de la relaxació del
+   problema
+ • Hem vist algunes heurístiques amb diferents nivells d’informació:
+
+                        hmax ≤ h+ ≤ h∗ ≤ hadd
+
+ • És un equilibri delicat entre la informativitat i el cost
+   computacional
+ • Això és només un petit tast del “zoo” d’heurístiques a la
+   literatura                    …
+
+                                                                      41 / 45
+Blocks World
+
+
+
+ 1:   (define (domain blocksworld)
+ 2:     (:requirements :strips :typing :equality)
+ 3:     (:types block)
+ 4:     (:predicates (on ?x ?y - block) (ontable ?x - block)
+ 5:           (clear ?x - block) (handempty) (holding ?x - block))
+ 6:
+ 7:    (:action pick-up
+ 8:     :parameters (?x - block)
+ 9:     :precondition (and (clear ?x) (ontable ?x) (handempty))
+10:     :effect (and (not (ontable ?x)) (not (clear ?x))
+11:                  (not (handempty)) (holding ?x)))
+12:    (:action put-down
+13:     :parameters (?x - block)
+14:     :precondition (holding ?x)
+15:     :effect (and (not (holding ?x)) (clear ?x)
+16:                  (handempty) (ontable ?x)))
+                                                                     42 / 45
+Blocks World (ii)
+  1:       (:action stack
+  2:        :parameters (?x ?y - block)
+  3:        :precondition (and (holding ?x) (clear ?y) (not (= ?x ?y)))
+  4:        :effect (and (not (holding ?x)) (not (clear ?y)) (clear ?x)
+  5:                      (handempty) (on ?x ?y)))
+  6:       (:action unstack
+  7:        :parameters (?x ?y - block)
+  8:        :precondition (and (on ?x ?y) (clear ?x) (handempty)
+  9:                       (not (= ?x ?y)))
+ 10:        :effect (and (holding ?x) (clear ?y) (not (clear ?x))
+ 11:                      (not (handempty)) (not (on ?x ?y))))
+ 12:   )
+
+
+Exercicis
+  • Implementeu el problema dibuixat i resoleu-lo amb ENHSP
+  • Calculeu diferens heurístics d’esborrat de precondicions
+  • Calculeu h+ , hadd i hmax
+
+                                                                          43 / 45
+References I
+
+  Blai Bonet and Hector Geffner,
+  Planning as heuristic search: New results, European Conference
+  on Planning, Springer, 1999, pp. 360–372.
+  Blai Bonet, Gábor Loerincs, and Héctor Geffner, A robust and
+  fast action selection mechanism for planning, Proceedings of the
+  fourteenth national conference on artificial intelligence and ninth
+  conference on Innovative applications of artificial intelligence,
+  1997, pp. 714–719.
+  Tom Bylander, The computational complexity of propositional
+  STRIPS planning, Artif. Intell. 69 (1994), no. 1-2, 165–204.
+  Vasek Chvatal, A greedy heuristic for the set-covering problem,
+  Mathematics of operations research 4 (1979), no. 3, 233–235.
+
+                                                                        44 / 45
+References II
+
+
+  P Haslum H Geffner and Patrik Haslum,
+  Admissible heuristics for optimal planning, Proceedings of the 5th
+  Internat. Conf. of AI Planning Systems (AIPS 2000), 2000,
+  pp. 140–149.
+  Jörg Hoffmann and Bernhard Nebel, The ff planning system: Fast
+  plan generation through heuristic search, Journal of Artificial
+  Intelligence Research 14 (2001), 253–302.
+  Jörg Hoffmann, Where ’ignoring delete lists’ works: Local search
+  topology in planning benchmarks, Journal of Artificial Intelligence
+  Research 24 (2005), 685–758.
+
+
+
+                                                                    45 / 45
+

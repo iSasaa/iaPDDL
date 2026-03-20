@@ -1,0 +1,1043 @@
+Planificació amb IA, una
+  introducció aplicada
+  Part I, modelització
+               IA, GEINF (UdG)
+
+
+Joan Espasa Arxer & Mateu Villaret Ausellé
+   University of St. Andrews & Universitat de Girona
+
+
+                 17 de març de 2025
+
+
+                                                       1 / 55
+Contingut
+
+1. Què és planificar?
+
+2. Què és la planificació automàtica (Classical
+AI Planning)
+
+3. El problema de la representació
+
+4. El Planning Domain Definition Language
+(PDDL to the rescue)
+
+
+                                                  2 / 55
+Què és planificar?
+
+
+
+
+                     3 / 55
+Què és planificar?
+
+
+  decidir com fer quelcom
+
+
+
+
+                            3 / 55
+Què és planificar?
+
+
+    decidir com fer quelcom
+
+    Utilitzant el coneixement sobre el món i considerant les ac-
+    cions possibles i els seus resultats, decidir què fer i quan per
+    tal d’assolir un objectiu, abans de començar a actuar.
+vacances       , equips esportius         , activitats escolars
+      ...
+
+
+
+
+                                                                       3 / 55
+Què és planificar?
+
+
+    decidir com fer quelcom
+
+    Utilitzant el coneixement sobre el món i considerant les ac-
+    cions possibles i els seus resultats, decidir què fer i quan per
+    tal d’assolir un objectiu, abans de començar a actuar.
+vacances       , equips esportius         , activitats escolars
+      ...
+
+    Utilitzant coneixement sobre l’estat del món i considerant les
+    accions disponibles i els seus efectes, determinar a priori,
+    una seqüència d’accions apropiades que tranformaran un es-
+    tat inicial en un estat objectiu.
+                                                                       3 / 55
+Als inicis de la IA
+Wikipedia: General Problem Solver
+General Problem Solver (GPS) was a computer program created in
+1958 by Herbert Simon, J.C. Shaw, and Allen Newell [NSS59]
+intended to work as a universal problem solver machine so that
+any formalized symbolic problem can be solved, in principle, by GPS.
+GPS was the first computer program which separated its knowledge
+of problems (rules represented as input data) from its strategy of how
+to solve problems (a generic solver engine).
+
+
+
+
+         Naixement de la Planificiació automàtica general
+                                                                         4 / 55
+Shakey (1969)
+• Programat en LISP
+• Desenvolupament d’ A*
+• Definició d’STRIPS (Stanford
+  Research Institute Problem
+  Solver)
+• Què podia fer el robot:
+    • Moure’s d’un lloc a un altre
+    • Encendre i apagar els
+      interruptors de llum
+    • Obrir i tancar portes
+    • Empènyer objectes mòbils
+    • ...
+• Objectius: anar a habitacio X
+                                     https://www.computerhistory.org/
+  amb els objectes A, B i C
+
+                                                                    5 / 55
+Cap endavant: què s’ha fet amb
+planificació automàtica?
+La planificació automàtica fa temps que ha deixat la “torre d’ivori” i
+ofereix aplicacions àmpliament esteses en diversos àmbits:
+  •   Rovers de la NASA a Mart [CRFS07],
+  •   Gestió logística automàtica d’hivernacles [HL10],
+  •   Control del trànsit urbà [CMM+ 16],
+  •   Planificació d’activitats i règims de medicació per a
+      pacients [AC19],
+  •   Gestió de magatzems d’Amazon [LTK+ 21],
+  •   Resposta automatitzada a ciberatacs [CKS+ 21],
+  •   Tutorització per a la presa de decisions quirúrgiques [VHSS22],
+  •   Generació automatitzada d’escenaris per a jocs tipus
+      trencaclosques [EMN+ 24],
+  •   etc. …
+                                                                         6 / 55
+En l’àmbit de la recerca
+ • Un dels principals subcamps de la Intel·ligència Artificial (IA)
+
+ • Representat en les principals conferències d’IA (IJCAI, AAAI,
+   ECAI, …)
+ • Conferència anual dedicada:
+   International Conference on Automated Planning and Scheduling
+   (≈250 participants)
+
+
+
+
+ • Millors revistes d’IA (AIJ, JAIR)
+
+                                                                      7 / 55
+Quin planning farem?
+
+Quan planifiquem, podem trobar-nos amb una gran varietat de
+situacions:
+
+  • El món és completament observat o parcialment observat?
+  • Els canvis es produeixen només per les accions o també per
+    esdeveniments exògens?
+  • Les accions són deterministes o estocàstiques?
+  • Les accions tenen una durada determinada o són instantànies?
+  • L’estat es representa amb una quantitat finita de fets o infinita?
+
+El problema general de planificació, que inclou totes aquestes
+variacions, és increïblement difícil!
+
+
+                                                                         8 / 55
+Quin planning farem?
+
+  • El món és completament observat o parcialment observat?
+  • Els canvis es produeixen únicament per les accions o també
+    per esdeveniments exògens?
+  • Les accions són deterministes o estocàstiques?
+  • Les accions tenen una durada determinada o són instantànies?
+  • L’estat es representa amb una quantitat finita de fets o
+    infinita?
+
+Aquestes hipòtesis defineixen el que s’anomena Planificació Clàssica
+
+
+Compte: aquesta definició és controvertida en la literatura …
+
+
+                                                                       8 / 55
+Un Puzzle clàssic: Torres de Hanoi
+
+
+
+
+ • Accions: moure el disc superior d’un pal a un altre. Les regles
+   estableixen que un disc més gran no es pot col·locar sobre un de
+   més petit.
+ • Objectiu: transferir tota la pila a un pal determinat.
+
+                                                                      9 / 55
+Representació d’estat per a classical planning
+Definition (Estat)
+Donat un conjunt finit d’objectes O, un conjunt finit de predicats
+lògics P (noms de relacions entre objectes) i un conjunt finit de
+variables X , definim el conjunt d’atoms possibles (variables d’estat):
+Atoms = {p(t1 , . . . , tn ) | p ∈ P, p és n-ari, {t1 , . . . , tn } ⊆ O ∪ X }
+Un àtom que no conté cap variable és un àtom ground.
+Un estat és un conjunt d’àtoms ground (els fets que són certs en
+aquest estat) sota l’assumpció de món tancat.
+
+  • L’assumpció de món tancat en un estat significa que els àtoms
+    ground que no hi apareixen es consideren falsos.
+  • Els predicats que mai canvien són predicats estàtics, en
+    contrast amb els predicats dinàmics, que poden canviar a causa
+    dels efectes de les accions.
+  • Cal tenir en compte que no tots els àtoms tindran sentit …
+                                                                                 10 / 55
+Torres de Hanoi amb 3 discs
+Torres de Hanoi amb 3 discs
+  • El nostre estat tindrà 6 objectes, 3 pals i 3 discs:
+    O = {p1 , p2 , p3 , d1 , d2 , d3 }
+  • Expresarem les relacions entre ells amb 3 predicats:
+    P = {smaller ( , ), clear ( ), on( , )}
+        • smaller : si un objecte és més petit que un altre
+        • clear : si un objecte no te res a sobre
+        • on: si un objecte està sobre d’un altre
+
+Atoms = {smaller (d1 , x), smaller (d2 , d3 ), smaller (d3 , p1 ), . . .
+   clear (p1 ), clear (y), clear (p3 ), clear (d1 ), . . .
+   on(d1 , d2 ), on(x, y), on(p1 , p3 ), on(d2 , d1 ), . . . }
+State = {clear (d1 ), clear (p2 ), clear (p3 ), on(d1 , d2 ), on(d2 , d3 ), on(d3 , p1 ),
+     smaller (d1 , d2 ), smaller (d1 , d3 ), smaller (d1 , p1 ), smaller (d1 , p2 ),
+     smaller (d1 , p3 ), smaller (d2 , d3 ), smaller (d2 , p1 ), smaller (d2 , p2 ),
+     smaller (d2 , p3 ), smaller (d3 , p1 ), smaller (d3 , p2 ), smaller (d3 , p3 )}
+                                                                                            11 / 55
+Accions (i)
+ • Les accions són responsables del canvi d’estat. Es componen de:
+     • precondicions, expressades com un conjunt d’àtoms ground.
+     • efectes, expressats com un conjunt d’àtoms ground a afegir eff +
+       (efectes d’addició) i àtoms ground a eliminar eff − (efectes
+       d’eliminació). Aquests dos conjunts han de ser disjunts.
+
+
+
+
+                                                                          12 / 55
+Accions (i)
+  • Les accions són responsables del canvi d’estat. Es componen de:
+        • precondicions, expressades com un conjunt d’àtoms ground.
+        • efectes, expressats com un conjunt d’àtoms ground a afegir eff +
+          (efectes d’addició) i àtoms ground a eliminar eff − (efectes
+          d’eliminació). Aquests dos conjunts han de ser disjunts.
+
+Accions a Hanoi
+move(d1 , d2 , p2 )
+Pre: {on(d1 , d2 ), clear (d1 ), smaller (d1 , p2 ), clear (p2 )}
+eff + : {on(d1 , p2 ), clear (d2 )}
+eff − : {clear (p2 ), on(d1 , d2 )}
+
+move(d2 , d3 , p2 )
+Pre: {on(d2 , d3 ), clear (d2 ), smaller (d2 , p2 ), clear (p2 )}
+eff + : {on(d2 , p2 ), clear (d2 )}
+eff − : {clear (p2 ), on(d2 , d3 )}    ···
+                                                                             12 / 55
+Accions (ii)
+  • Una acció a = hpre, heff + , eff − ii és aplicable en un estat s si
+    pre ⊆ s.
+  • El resultat d’aplicar l’acció a = hpre, heff + , eff − ii a l’estat s
+    és l’estat a(s) = (s ∪ eff + ) \ eff − sempre que pre ⊆ s, en cas
+    contrari no està definit.
+Aplicant accions a Hanoi 3
+move(d1 , d2 , p2 ) =     h{on(d1 , d2 ), clear (d1 ), smaller (d1 , p2 ), clear (p2 )},
+                            h{on(d1 , p2 ), clear (d2 )}, {clear (p2 ), on(d1 , d2 )}ii
+s = {smaller (d1 , d2 ), smaller (d2 , d3 ), smaller (d3 , p1 ), smaller (d1 , p2 ), . . .
+     clear (d1 ), clear (p2 ), clear (p3 ), on(d1 , d2 ), on(d2 , d3 ), on(d3 , p1 )}
+
+
+
+
+                                                                                             13 / 55
+Accions (ii)
+   • Una acció a = hpre, heff + , eff − ii és aplicable en un estat s si
+     pre ⊆ s.
+   • El resultat d’aplicar l’acció a = hpre, heff + , eff − ii a l’estat s
+     és l’estat a(s) = (s ∪ eff + ) \ eff − sempre que pre ⊆ s, en cas
+     contrari no està definit.
+Aplicant accions a Hanoi 3
+ move(d1 , d2 , p2 ) =     h{on(d1 , d2 ), clear (d1 ), smaller (d1 , p2 ), clear (p2 )},
+                             h{on(d1 , p2 ), clear (d2 )}, {clear (p2 ), on(d1 , d2 )}ii
+ s = {smaller (d1 , d2 ), smaller (d2 , d3 ), smaller (d3 , p1 ), smaller (d1 , p2 ), . . .
+      clear (d1 ), clear (p2 ), clear (p3 ), on(d1 , d2 ), on(d2 , d3 ), on(d3 , p1 )}
+
+move(d1 , d2 , p2 )(s) =
+ smaller (d1 , d2 ), smaller (d2 , d3 ), smaller (d3 , p1 ), smaller (d1 , p2 ), . . . 
+                                                                                       
+
+   clear (d1 ), clear
+                     (p2 ), clear (p3 ), clear (d2 ), . . .
+  on(d     d     on(d  1 2 ), on(d2 , d3 ), on(d3 , p1 ), . . .
+                          p
+            
+         ,   ),        ,
+                                                                                      
+   1 2
+                                                                                              13 / 55
+Espai d’estats
+L’aplicació d’accions genera un espai de cerca en un espai d’estats:
+
+
+
+
+                                                                       14 / 55
+The STRIPS Planning Problem (i)
+Definition (Problema de Planificació)
+Un problema de planificació clàssic es pot representar com una
+tupla Π = (Atoms, s0 , G, A), on:
+  • Atoms és un conjunt d’àtoms amb els que formarem els estats,
+     les accions i l’objectiu.
+  • s0 és l’estat inicial.
+  • A és un conjunt finit d’accions.
+  • G ⊆ Atoms és l’objectiu, el conjunt d’àtoms ground que han de
+    ser satisfets.
+
+Un estat objectiu és un estat que conté tots els àtoms de G.
+Donada Π = (Atoms, s0 , G, A), el problema de planificació per Π
+consisteix a trobar una seqüència d’accions [a1 , . . . , an ] (pla) on
+{a1 , . . . , an } ⊆ A tal que: G ⊆ an (. . . (a1 (s0 )) . . . ).
+                                                                          15 / 55
+Problema i solució per a Hanoi 3
+Atoms = {smaller (d1 , d2 ), smaller (d2 , d3 ), smaller (d3 , p1 ), . . .
+         clear (p1 ), clear (p2 ), clear (p3 ), clear (d1 ), . . .
+         on(d1 , d2 ), on(d1 , d3 ), on(p1 , p3 ), on(d2 , d1 ), . . . }
+A = {move(d1 , d1 , p1 ), move(d1 , d1 , p2 ), move(d1 , d1 , p3 ),
+     move(d1 , d2 , p1 ), move(d1 , d2 , p2 ), move(d1 , d2 , p3 ),
+     move(d1 , d3 , p1 ), move(d1 , d3 , p2 ), move(d1 , d3 , p3 ), . . . }
+
+s0 = {smaller (d1 , d2 ), smaller (d2 , d3 ), smaller (d3 , p1 ),
+      smaller (d1 , p1 ), smaller (d1 , p2 ), smaller (d1 , p3 ),
+      smaller (d2 , p1 ), smaller (d2 , p2 ), smaller (d2 , p3 ),
+      smaller (d3 , p1 ), smaller (d3 , p2 ), smaller (d3 , p3 ),
+      on(d1 , d2 ), on(d2 , d3 ), on(d3 , p1 ),
+      clear (d1 ), clear (p2 ), clear (p3 )}
+
+G = {on(d1 , d2 ), on(d2 , d3 ), on(d3 , p3 )}
+
+π = [ move(d1 , d2 , p3 ), move(d2 , d3 , p2 ), move(d1 , p3 , d2 ), move(d3 , p1 , p3 ),
+ move(d1 , d2 , p1 ), move(d2 , p2 , d3 ), move(d1 , p1 , d2 ) ]
+
+                                                                                            16 / 55
+Exercicis
+
+
+ • Demostra pas a pas que:
+    π = [ move(d1 , d2 , p3 ), move(d2 , d3 , p2 ), move(d1 , p3 , d2 ),
+    move(d3 , p1 , p3 ), move(d1 , d2 , p1 ), move(d2 , p2 , d3 ), move(d1 , p1 , d2 ) ]
+   és una solució de Hanoi 3.
+ • Donat s0 i G = {clear (p2 ), on(d3 , p3 )}, troba’n un pla.
+ • Donat s0 i G = {clear (p1 ), clear (p2 ), on(d3 , p3 )}, troba’n un pla.
+ • Afegeix un pal a Hanoi 3. Pots trobar-ne un pla més curt?
+ • Transforma Hanoi 3 a Hanoi 4 (i.e. amb 4 discs i 3 pals).
+
+
+
+
+                                                                                       17 / 55
+The STRIPS Planning Problem (ii)
+
+Anomenat així pel Stanford Research Institute Problem Solver [FN71]
+En essència: Una tasca de planificació STRIPS formalitza el
+problema de trobar una seqüència d’accions (operadors) que
+transformi un estat inicial en un estat objectiu.
+  • STRIPS és particularment senzill, però prou expressiu per
+    capturar tasques generals de planificació.
+  • En termes de complexitat, STRIPS no és més fàcil que la
+    planificació en general [Byl94] (és PSPACE i NP-hard).
+  • Molts algoritmes en la literatura de planificació només es
+    presenten per a tasques de planificació STRIPS (la seva
+    generalització és sovint, però no sempre, evident).
+
+
+                                                                  18 / 55
+Resolent STRIPS
+Algorithm 1 Una manera genèrica de formalitzar la cerca
+ 1: Inicialitza la llista open amb l’estat inicial
+ 2: while open no és buida do
+ 3:    Tria i elimina de la llista open el node que considerem millor
+ 4:    if node conté el goal then
+ 5:       return una solució
+ 6:    end if
+ 7:    Troba tots els nodes veïns als quals es pot arribar en un sol pas
+ 8:    Afegeix aquests nodes a la llista open
+ 9: end while
+10: return error (no s’ha trobat cap solució)
+
+
+Un Planner d’STRIPS simple en Python:
+https://github.com/aibasel/pyperplan
+
+                                                                       19 / 55
+Però, com especifiquem un problema?
+Question
+Hem d’escriure totes les accions? (Hanoi 3 te 6 ∗ 6 ∗ 6 = 216 moves!!!)
+
+Enumerant totes les actions a Hanoi 3
+ move(d1 , d1 , d1 ) =   h{on(d1 , d1 ), clear (d1 ), smaller (d1 , d1 ), clear (d1 )},
+                           h{on(d1 , d1 ), clear (d1 )}, {clear (d1 ), on(d1 , d1 )}ii
+ move(d1 , d2 , p2 ) =   h{on(d1 , d2 ), clear (d1 ), smaller (d1 , p2 ), clear (p2 )},
+                           h{on(d1 , p2 ), clear (d2 )}, {clear (p2 ), on(d1 , d2 )}ii
+ move(d1 , d2 , p3 ) =   h{on(d1 , d2 ), clear (d1 ), smaller (d1 , p3 ), clear (p3 )},
+                           h{on(d1 , p3 ), clear (d2 )}, {clear (p3 ), on(d1 , d2 )}ii
+ ...
+
+  • Propens a errors si s’escriuen manualment.
+  • Difícils de llegir i entendre.
+  • Millor fer abstraccions mitjançant esquemes d’acció.
+                                                                                          20 / 55
+Esquemes d’acció (i)
+
+Els esquemes d’Acció representen de manera abstracta totes les
+accions disponibles en un problema de planificació, essent una
+representació “lifted” de les accions. Consten de:
+  • Un nom d’acció.
+  • Una llista de paràmetres (noms de variables).
+  • Una precondició com un conjunt d’àtoms, que probablement
+    contenen les variables declarades com a paràmetres d’acció.
+  • Llistes d’efectes d’addició i eliminació com conjunts d’àtoms,
+    que probablement contenen les variables declarades com a
+    paràmetres d’acció.
+
+
+
+
+                                                                     21 / 55
+Esquemes d’acció (ii)
+
+L’esquema d’acció move de Hanoi
+
+Com seria l’esquema d’acció de move?
+
+
+
+
+                                       22 / 55
+Esquemes d’acció (ii)
+
+L’esquema d’acció move de Hanoi
+
+Com seria l’esquema d’acció de move?
+ move(x, y, z) =   h{on(x, y), clear (x), smaller (x, z), clear (z)},
+                     h{on(x, z), clear (y)}, {clear (z), on(x, y)}ii
+
+La instanciació ground d’aquest esquema d’acció amb el conjunt
+d’objectes de Hanoi 3: {d1 , d2 , d3 , p1 , p2 , p3 } donaria com a resultat
+les 216 accions esmentades anteriorment.
+Fixeu-vos que el conjunt de tots els estats possibles resultaria de la
+combinació de tots els àtoms ground.
+
+
+
+                                                                               22 / 55
+Limitacions d’STRIPS
+Més enllà d’STRIPS bàsic, un llenguatge de planificació millor hauria
+d’oferir:
+  • Estructuració jeràrquica de tipus per a objectes i classes.
+  • Representació directa de la negació en precondicions i objectiu.
+  • Suport per a expressions disjuntives en precondicions i objectiu.
+  • Efectes condicionals per modelar resultats d’accions complexes.
+  • Quantificadors (∀, ∃) per a expressions concises i potents.
+Aquests aspectes corresponen al Llenguatge de Descripció d’Accions
+(ADL) [Ped94].
+
+
+
+
+                                                                        23 / 55
+Limitacions d’STRIPS
+Més enllà d’STRIPS bàsic, un llenguatge de planificació millor hauria
+d’oferir:
+  • Estructuració jeràrquica de tipus per a objectes i classes.
+  • Representació directa de la negació en precondicions i objectiu.
+  • Suport per a expressions disjuntives en precondicions i objectiu.
+  • Efectes condicionals per modelar resultats d’accions complexes.
+  • Quantificadors (∀, ∃) per a expressions concises i potents.
+Aquests aspectes corresponen al Llenguatge de Descripció d’Accions
+(ADL) [Ped94].
+
+Reducció de l’espai de cerca en Hanoi
+Per exemple, els quantificadors ens permeten eliminar el predicat
+clear ( ) establint que el bloc actual no té cap altre bloc a sobre.
+Això redueix l’espai d’estats!
+ move(x, y, z) =   h{on(x, y), smaller (x, z), ∀w.¬on(w, x) ∧ ¬on(w, z) },
+                     h{on(x, z)}, {on(x, y)}ii
+                                                                             23 / 55
+Lògica per a representar el mon
+
+A ADL, l’objectiu i les precondicions i els efectes de les accions es
+podran representar de forma més genèrica amb fórmules lògiques1 :
+
+Definition (Fórmulas)
+Donat un conjunt d’àtoms Atoms
+  • Un àtom A ∈ Atoms és una fórmula.
+  • Si F és una fórmula, la seva negació ¬F també és una fórmula.
+  • Si F i G són fórmules, la conjunció F ∧ G (and), la disjunció
+    F ∨ G (or) i la implicació F → G (implies) són fórmules.
+  • Si F és una fórmula que te la variable x lliure, llavors ∀x.F
+    (forall) i ∃x.F (exists) són fórmules.
+
+
+  1
+      Tot i que amb algunes restriccions.
+                                                                        24 / 55
+The Planning Language
+PDDL significa Planning Domain Definition Language.
+
+Utilitzem PDDL per a especificar/modelitzar problemes de
+planificació de forma declarativa i que un planner ens el resolgui.
+No donem un algorisme per a resoldre’l!!!
+
+  • Necessitarem dues parts/fitxers:
+       • Domini: accions i predicats representant el món
+       • Problema: objectes, estat inicial i objectiu
+  • Implementa ADL i més: STRIPS ⊂ ADL ⊂ PDDL
+  • Ha evolucionat amb cada International Planning Competition
+  • Ofereix variants i extensions per a aproximacions no clàssiques de
+    planning
+  • La darrera versió del llenguatge és PDDL 3.1 [HLMM19]
+
+                                                                      25 / 55
+Hanoi en PDDL (versió 1) (i)
+
+Versió STRIPS de Hanoi en PDDL (domain)
+     1:   (define (domain hanoiv1)
+     2:     (:requirements :strips)
+     3:     (:predicates (clear ?x) (on ?x ?y) (smaller ?x ?y))
+     4:
+     5:       (:action move
+     6:         :parameters (?disc ?from ?to)
+     7:         :precondition (and (smaller ?disc ?to)
+     8:                             (on ?disc ?from)
+     9:                             (clear ?disc) (clear ?to))
+    10:         :effect (and
+    11:                     (clear ?from) (on ?disc ?to)
+    12:                     (not (on ?disc ?from)) (not (clear ?to))
+    13:                     )
+    14:       )
+    15:   )
+
+
+
+
+                                                                       26 / 55
+Hanoi en PDDL (versió 1) (ii)
+En un fitxer a part:
+
+Versió STRIPS de Hanoi en PDDL (problem)
+       1:   (define (problem hanoi3)
+       2:     (:domain hanoiv1)
+       3:
+       4:     (:objects peg1 peg2 peg3 d1 d2 d3)
+       5:
+       6:     (:init
+       7:      (smaller d1 peg1) (smaller d2 peg1) (smaller d3 peg1)
+       8:      (smaller d1 peg2) (smaller d2 peg2) (smaller d3 peg2)
+       9:      (smaller d1 peg3) (smaller d2 peg3) (smaller d3 peg3)
+      10:      (smaller d1 d2) (smaller d1 d3) (smaller d2 d3)
+      11:      (clear peg2) (clear peg3) (clear d1)
+      12:      (on d1 d2) (on d2 d3) (on d3 peg1)
+      13:     )
+      14:
+      15:     (:goal (and (on d1 d2) (on d2 d3) (on d3 peg3)))
+      16:     )
+
+
+                                                                       27 / 55
+Versió ADL de Hanoi en PDDL
+Ens podríem estalviar el predicat clear( ) usant quantificadors i
+negació:
+move sense el predicat clear
+      1:    (:action move
+      2:      :parameters (?disc ?from ?to)
+      3:      :precondition (and
+      4:                      (smaller ?disc ?to)
+      5:                      (on ?disc ?from)
+      6:                      (forall (?w)
+      7:                          (and (not (on ?w ?disc))
+      8:                               (not (on ?w ?to)))))
+      9:
+     10:      :effect (and (on ?d ?to) (not (on ?d ?from)))))
+
+
+
+Pregunta
+Podem diferenciar entre disc i pals? en què ens ajudaria?
+                                                                    28 / 55
+Hanoi en PDDL (versió 2) (i)
+
+Versió ADL de Hanoi en PDDL (domain)
+     1:   (define (domain hanoiv2)
+     2:     (:requirements :adl)
+     3:     (:types disc peg - object)
+     4:     (:predicates (on ?x - disc ?y - object)
+     5:                  (smaller ?x - disc ?y - object))
+     6:
+     7:    (:action move
+     8:      :parameters (?d - disc ?from - object ?to - object)
+     9:      :precondition (and
+    10:                      (smaller ?d ?to)
+    11:                      (on ?d ?from)
+    12:                      (forall (?w - disc)
+    13:                          (and (not (on ?w ?d))
+    14:                               (not (on ?w ?to)))))
+    15:
+    16:      :effect (and (on ?d ?to) (not (on ?d ?from)))))
+
+
+
+                                                                   29 / 55
+Hanoi en PDDL (versió 2) (ii)
+
+Versió ADL de Hanoi en PDDL (problem)
+     1:   (define (problem hanoi3)
+     2:     (:domain hanoiv2)
+     3:     (:objects peg1 peg2 peg3 - peg
+     4:               d1 d2 d3 - disc)
+     5:
+     6:     (:init
+     7:      (smaller d1 peg1) (smaller d2 peg1) (smaller d3 peg1)
+     8:      (smaller d1 peg2) (smaller d2 peg2) (smaller d3 peg2)
+     9:      (smaller d1 peg3) (smaller d2 peg3) (smaller d3 peg3)
+    10:      (smaller d1 d2) (smaller d1 d3) (smaller d2 d3)
+    11:      (on d1 d2) (on d2 d3) (on d3 peg1)
+    12:     )
+    13:
+    14:     (:goal (and (on d1 d2) (on d2 d3) (on d3 peg3))))
+
+
+
+
+                                                                     30 / 55
+Dock Worker Robot Planning Problem
+Del llibre de referència de l’assignatura (AI: A Modern
+Approach [RN16])
+
+
+
+
+                                                          31 / 55
+Dock Worker Robot Planning Problem
+
+
+
+
+                                     32 / 55
+Consideracions per a DWR
+
+ • Els robot-camions (robot-truck) només poden transportar un
+   contenidor (container) a la vegada.
+ • Pot haver-hi diversos robot-camions, però només pot haver-hi un
+   robot-camió en una ubicació (location) a la vegada.
+ • Pot haver-hi diverses piles i diverses grues (crane) per ubicació.
+ • L’altura de les piles no té límit.
+ • Cada pila té una paleta (pallet) com a base on es poden apilar
+   els contenidors.
+ • Una grua pot sostenir un contenidor a la vegada.
+ • Una grua només pot agafar contenidors de les piles que es troben
+   a la mateixa ubicació que la grua.
+
+
+                                                                    33 / 55
+Accions per a DWR
+
+                    • take una grua agafa un
+                      contenidor d’una pila
+                    • put una grua posa un
+                      contenidor en una pila
+                    • move un robot-camió va d’un
+                      lloc a un altre
+                    • load una grua carrega el
+                      contenidor que te agafat a un
+                      camió buit
+                    • unload una grua agafa un
+                      contenidor d’un camió no buit
+
+
+                                                 34 / 55
+Objectes i tipus per a DWR
+
+
+Tipus         Descripció
+location      Zones on pot haver-hi piles, grues i un camió.
+containers    Caixes grans que es poden apilar en piles (assumim
+              que estaran sobre una paleta).
+pile          Un lloc on es poden apilar els contenidors.
+crane         Enormes grues capaçes d’aixecar un contenidor; es-
+              tan fixades en una location.
+robot-truck   Grans camions amb capacitat per un contenidor.
+              Poden moure’s entre ubicacions adjacents.
+
+
+
+
+                                                                   35 / 55
+Predicats per a DWR
+Predicats2                      Descripció
+(adjacent ?l1 ?l2)              location ?l1 és adjacent a ?l2
+(attached ?p ?l)                la pile ?p pertany a la location ?l
+(belong ?k ?l)                  crane ?k pertany a la location ?l
+(at ?r ?l)                      robot-truck ?r és a la location ?l
+(occupied ?l)                   hi ha un robot-truck a la location ?l
+(loaded ?r ?c)                  robot-truck ?r porta carregat el container ?c
+(unloaded ?r)                   robot-truck ?r és buit
+(holding ?k ?c)                 crane ?k està sostenint el container ?c
+(empty ?k)                      crane ?k és buida
+(in ?c ?p)                      container ?c està a la pila ?p
+(top ?c ?p)                     container ?c és a sobre de la pila ?p
+(on ?k1 ?k2)                    container ?k1 està sobre el container ?k2
+(equal ?c1 ?c2)                 container ?c1 és el mateix que ?c2
+ 2
+     Els tipus s’ometen per limitacions d’espai.
+                                                                          36 / 55
+Completant DWR
+
+Completant el domini i el problema
+Completeu les tasques següents:
+  • Completeu la modelització de les accions
+  • Construïu state0 amb dues ubicacions adjacents, una pile a
+    cada location, una crane a cada location, tres containers a la
+    primera location i cap a la segona, i un robot-truck a la segona
+    location.
+  • Definiu l’objectiu on tots els containers estiguin apilats a la pile
+    de la segona location
+  • Trobeu una solució a aquest nou problema
+
+
+
+                                                                           37 / 55
+Preguntes sobre el DWR
+
+Més preguntes
+  • Què passaria si l’state0 té dos robot-trucks a cada lloc?
+  • Podem simplificar el nombre de predicats afegint una jerarquia de
+    tipus? Fixeu-vos que attached, belong i at són força similars.
+  • Definiu un nou estat amb tres locations adjacents, amb una pile i
+    una crane a cada location, on les piles de la primera i segona
+    location tenen 3 containers cadascuna. També hem de tenir dos
+    robot-trucks en dues locations diferents. L’objectiu consisteix en
+    apilar tots els containers a la pile de la tercera location.
+  • Trobeu una solució a aquest nou problema
+
+Trobareu un model bàsic del DWR al git de pràctiques:
+https://github.com/mateuvillaret/PDDL-Intro.git
+
+                                                                     38 / 55
+Més expressivitat?
+
+
+El problema DWR ha obviat coses com:
+  • el combustible gastat
+  • el pes dels contenidors
+  • la capacitat del camió
+
+Què necessitaríem per gestionar això?
+
+Planning Numèric (ja present a PDDL 2.1)
+
+
+
+
+                                           39 / 55
+Petrobras, versió simplificada (i)
+
+
+              Planificació d’operacions navals per a
+              l’extracció de petroli [BEV14].
+                 • El problema: transportar béns i eines des
+                    de dos ports terrestres fins a plataformes
+                    marítimes
+                 • Optimització de l’ús dels vaixells
+                    considerant factors com el consum de
+                    combustible tot respectant les capacitats
+                    de càrrega dels vaixells. (altres possibles
+                    factors: temps d’amarratge, ...)
+
+
+
+
+                                                                  40 / 55
+Petrobras, versió simplificada (ii)
+
+                               • Conques i Ports: Dues conques
+                                 (Rio de Janeiro i Santos) tenen
+                                 cadascuna un port per a la càrrega
+                                 de mercaderies. Els ports poden
+                                 atracar dos vaixells simultàniament.
+                               • Plataformes: tant Rio com Santos
+                                 tenen plataformes petrolieres que
+                                 requereix lliuraments pel
+ • Articles de càrrega: Els      manteniment. Algunes plataformes
+                                 permeten el reabastiment de
+   articles de càrrega tenen     combustible.
+   pesos específics i es       • Vaixells: Cadascun té una
+   transporten des dels          capacitat de transport i de
+   ports fins a les              combustible. El consum de
+   plataformes.                  combustible varia segons la càrrega.
+
+                                                                    41 / 55
+Petrobras, versió simplificada (ii)
+
+
+                    • Accions: Navegar, Atracar,
+                      Desatracar, Carregar mercaderia,
+                      Descarregar mercaderia,
+                      Reabastir de fuel el vaixell
+                    • Objectiu: portar certs articles
+                      desde els ports a les plataformes
+                    • Optimització: gastar el mínim
+                      combustible possible
+
+
+
+
+                                                          42 / 55
+Estat a Planning numèric (PDDL2.1)
+L’estat es representa per un conjunt de variables d’estat:
+  • Variables d’estat Booleanes (en forma d’àtoms com a
+     STRIPS), e.g. (on d1 d2), (clear p1), etc.
+  • Variables d’estat numèriques (numeric fluents) ∈ Q, e.g.
+     (fuel cotxe), (distancia santpol girona), etc.
+Les variables d’estat numèriques estan formades per funcions:
+Declaració de funcions per PetroBras en PDDL
+      1:   (define (domain petrobras)
+      2:     (:requirements :fluents :typing        ... )
+      3:     (:types   location locatable - object
+      4:               ship cargo - locatable       ... )
+      5:     (:predicates                           ... )
+      6:     (:functions
+      7:      (consumption_empty ?from ?to - location) - number
+      8:      (current_fuel ?sh - ship) - number
+      9:      (current_load ?sh - ship) - number    ... )
+     10:   )
+     11:
+                                                                  43 / 55
+Goal, precondicions i efectes d’accions a
+Planning numèric
+
+ • Les fórmules per a construir les precondicions i definir el goal
+   ara inclouran àtoms numèrics de la forma:
+
+          (op_relacional    exp_aritmetica    exp_aritmetica)
+
+   op_relacional ∈ {=, <, >, ≥, ≤} i exp_arimetiques podran
+   contenir constants numèriques, fluents numèrics i operadors
+   aritmètics bàsics: +, −, ∗, /. Típicament expressions lineals.
+ • Els efectes de les accions podran modificar les variables d’estat
+   Booleanes com fins ara, i les variables d’estat numèriques les
+   modificaran amb assignacions, increments, decrements i
+   multiplicacions.
+
+                                                                       44 / 55
+Exemple d’accions (PetroBras) (i)
+
+sail action from PetroBras
+   1:   (:action sail_empty
+   2:       :parameters (?sh - ship ?from - location ?to - location)
+   3:       :precondition
+   4:           (and (at_ ?sh ?from)
+   5:                (not (docked ?sh ?from))
+   6:                (= (current_load ?sh) 0)
+   7:                (>= (current_fuel ?sh)
+   8:                     (consumption_empty ?from ?to)))
+   9:       :effect
+  10:           (and (at_ ?sh ?to)
+  11:                (not (at_ ?sh ?from))
+  12:                (decrease (current_fuel ?sh)
+  13:                           (consumption_empty ?from ?to))
+  14:                (increase (total_fuel_used)
+  15:                           (consumption_empty ?from ?to))))
+
+
+
+
+                                                                       45 / 55
+Exemple d’accions (PetroBras) (ii)
+Exemple amb efectes condicionals (when):
+
+refuel_at_port action from PetroBras
+   1:   (:action refuel_at_port
+   2:       :parameters (?sh - ship ?l - port)
+   3:       :precondition (and
+   4:                        (docked ?sh ?l)
+   5:                        (can_refuel ?l))
+   6:       :effect (and
+   7:                    (when (<= (+ (current_fuel ?sh) 200)
+   8:                              (fuel_capacity ?sh))
+   9:                          (increase (current_fuel ?sh) 200))
+  10:
+  11:                     (when (> (+ (current_fuel ?sh) 200)
+  12:                              (fuel_capacity ?sh))
+  13:                           (assign (current_fuel ?sh)
+  14:                                   (fuel_capacity ?sh)))
+  15:                 )
+  16:         )
+
+
+                                                                    46 / 55
+Planning numèric (PDDL2.1)
+Els conceptes d’aplicabilitat d’acció s’adapten (com de fet ja es feia a
+ADL) per fórmules lògiques.
+  • Una acció consta d’una fórmula especificant la seva precondició
+     Pre i una conjunció d’efectes Eff : a = hPre, Eff i.
+  • direm que a és aplicable a un estat s quan s |= Pre, és a dir,
+     l’estat s cumpleix (satisfà) les condicions de la fórmula Pre.
+  • Quan una acció a = hPre, Eff i aplicable a un estat s s’aplica a s
+     canviarà les variables d’estat d’s d’acord amb Eff . Si no és
+     applicable, a(s) = ⊥, un estat indefinit tal que per qualsevol
+     acció a, a(⊥) = ⊥.
+  • Donat un objectiu G i un estat inicial s0 , direm que la seqüència
+     d’accions [a1 , . . . , an ] és un pla si an (. . . (a0 (s0 )) . . . ) |= G i
+     an (. . . (a0 (s0 )) . . . ) 6= ⊥.
+
+                                                                                 47 / 55
+Qualitat del pla a PDDL2.1
+Podem definir la qualitat d’un pla en funció de fluents numèrics:
+  • Ara volem trobar un pla òptim que ens porti a un estat objectiu
+    òptim d’acord amb la mètrica de qualitat que definim.
+  • La qualitat del pla la podem demanar mitjançant la
+    minimització o maximització d’una expressió aritmètica amb
+    variables numèriques. ENHSP no suporta maximització.
+Minimitzant total_fuel_used als problemes PetroBras
+   1:   (define
+   2:    (problem petro2-2)
+   3:    (:domain petrobras)
+   4:    (:objects ship1 ship2 - ship ... )
+   5:    (:init (= (total_fuel_used) 0) ...)
+   6:    (:goal (and (at_ cargo1 F1) (at_ cargo2 F4) ...))
+   7:    (:metric minimize (total_fuel_used)))
+
+
+
+Què passa si les accions decrementen el valor de les variables
+contribuent al cost a minimitzar?                                 48 / 55
+El cost de l’expressivitat
+Evidentment podrem definir dominis molt més rics, però a quin cost?
+Semidecidibilitat de PDDL 2.1
+  • L’espai d’estats passa a ser infinit. (els fluents numèrics poden
+    prendre valors en Q).
+  • Podem anar provant amb llargades més grans, però quina és la
+    cota superior?
+  • Encara tenim semidecidibilitat
+  • Els efectes de les accions poden dependre de l’estat en que
+    s’executen (heurístics més complicats).
+  • No hi ha assumpció del mon tancat per fluents numèrics.
+  • No podem tenir paràmetres numèrics a les accions ja que
+    tindríem un branching d’accions infinit!
+  • Compte amb efectes condicionals sobre la mateixa variable
+    d’estat numèrica!!
+                                                                        49 / 55
+PDDL2.1 i més enllà...
+
+
+PDDL2.1 suporta també planning temporal (accions amb durada)
+  • Més enllà de PDDL2.1
+      •   Constraints a satisfer entre estats
+      •   Derived Predicates
+      •   No-determinisme en les accions
+      •   No-determinisme en el coneixement de l’estat
+
+També hi ha planning amb semàntica paral·lela on es consideren
+diverses accions passen alhora (sense interferir).
+
+
+
+
+                                                                 50 / 55
+Referències I
+
+
+  Fares K. Alaboud and Andrew Coles, Personalized medication
+  and activity planning in PDDL+, Proceedings of the
+  Twenty-Ninth International Conference on Automated Planning
+  and Scheduling (ICAPS), 2019, pp. 492–500.
+  Miquel Bofill, Joan Espasa, and Mateu Villaret, Efficient SMT
+  Encodings for the Petrobras Domain, 13th International
+  Workshop on Constraint Modelling and Reformulation (ModRef
+  2014), 2014, pp. 68–84.
+  Tom Bylander, The computational complexity of propositional
+  STRIPS planning, Artif. Intell. 69 (1994), no. 1-2, 165–204.
+
+
+
+                                                                  51 / 55
+Referències II
+
+  Taejun Choi, Ryan KL Ko, Tapan Saha, Joshua Scarsbrook,
+  Abigail MY Koay, Shunyao Wang, Wenlu Zhang, and Connor
+  St Clair, Plan2defend: Ai planning for cybersecurity in smart
+  grids, 2021 IEEE PES Innovative Smart Grid Technologies-Asia
+  (ISGT Asia) (2021), 1–5.
+  Lukás Chrpa, Daniele Magazzeni, Keith McCabe, Thomas Leo
+  McCluskey, and Mauro Vallati, Automated planning for urban
+  traffic control: Strategic vehicle routing to respect air quality
+  limitations, Intelligenza Artificiale 10 (2016), no. 2, 113–128.
+  Joseph Carsten, Arturo Rankin, Dave Ferguson, and Anthony
+  Stentz, Global path planning on board the mars exploration
+  rovers, 2007 IEEE Aerospace Conference, 2007, pp. 1–11.
+
+
+                                                                      52 / 55
+Referències III
+
+
+  Joan Espasa, Ian Miguel, Peter Nightingale, András Z. Salamon,
+  and Mateu Villaret, Plotting: a case study in lifted planning with
+  constraints, Constraints An Int. J. 29 (2024), no. 1-2, 40–79.
+  Richard Fikes and Nils J. Nilsson, STRIPS: A new approach to
+  the application of theorem proving to problem solving, Artif.
+  Intell. 2 (1971), no. 3/4, 189–208.
+  Malte Helmert and Hauke Lasinger, The scanalyzer domain:
+  Greenhouse logistics as a planning problem, Proceedings of the
+  20th International Conference on Automated Planning and
+  Scheduling, ICAPS, AAAI, 2010, pp. 234–237.
+
+
+
+                                                                       53 / 55
+Referències IV
+
+  Patrik Haslum, Nir Lipovetzky, Daniele Magazzeni, and Christian
+  Muise, An Introduction to the Planning Domain Definition
+  Language, Synthesis Lectures on Artificial Intelligence and
+  Machine Learning, Morgan & Claypool Publishers, 2019.
+  Jiaoyang Li, Andrew Tinka, Scott Kiesel, Joseph W. Durham,
+  T. K. Satish Kumar, and Sven Koenig, Lifelong multi-agent path
+  finding in large-scale warehouses, Thirty-Fifth AAAI Conference
+  on Artificial Intelligence, 2021, pp. 11272–11281.
+  Allen Newell, John C. Shaw, and Herbert A. Simon, Report on a
+  general problem-solving program, Proceedings of the International
+  Conference on Information Processing, 1959, pp. 256–264.
+
+
+
+                                                                    54 / 55
+Referències V
+
+
+  Edwin P. D. Pednault, ADL and the State-Transition Model of
+  Action, Journal of Logic and Computation 4 (1994), no. 5,
+  467–512.
+  Stuart J Russell and Peter Norvig, Artificial Intelligence: A
+  Modern Approach, Pearson, 2016.
+  Narumol Vannaprathip, Peter Haddawy, Holger Schultheis, and
+  Siriwan Suebnukarn, Intelligent tutoring for surgical decision
+  making: A planning-based approach, International Journal of
+  Artificial Intelligence in Education 32 (2022), no. 2, 350–381.
+
+
+
+
+                                                                    55 / 55
+

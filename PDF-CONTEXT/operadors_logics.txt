@@ -1,0 +1,191 @@
+                        Apunts bàsics de Lògica de Primer Ordre
+                       Apunts complementaris de Planning - IA - GDDV - UdG
+
+                                            Mateu Villaret, 2026
+
+
+1        Introducció
+La lògica de primer ordre (també anomenada lògica de predicats) és una extensió de la lògica
+proposicional que permet expressar afirmacions sobre objectes individuals, les seves propietats i les
+relacions entre ells.
+    Mentre que la lògica proposicional només treballa amb proposicions completes com “plou” o “fa
+fred”, la lògica de primer ordre permet construir afirmacions més complexes com ara:
+        • “Tots els humans són mortals”
+        • “Existeix un estudiant que treballa”
+   Per poder expressar aquestes idees, la lògica de primer ordre utilitza diversos elements sintàctics:
+constants, variables, predicats, operadors lògics i quantificadors.
+
+
+2        Elements bàsics
+Els principals components de les fórmules de la lògica de primer ordre són els següents:
+        • Les constants representen objectes concrets del domini. Per exemple:
+
+                                      a, b, c, 0, 1, pere, girona, joan, maria . . .
+          Poden representar objectes especı́fics, com per exemple una persona o un nombre.             1
+
+
+        • Les variables representen elements arbitraris del domini.
+          Exemples tı́pics són:
+
+                                                         x, y, z
+          Aquestes variables poden prendre diferents valors segons el context o la interpretació.
+        • Els predicats descriuen propietats dels objectes o relacions entre objectes.
+          Exemples:
+
+            – Humà( ) : “ser humà”
+            – M ortal( ) : “ser mortal”
+            – M ajor( , ) : “ser més gran un que un altre”
+    1
+    En lògica de primer ordre els objectes els podem representar de formes més complexes mitjançant termes, per
+exemple doble(1) que representaria el numero 2, o pare(maria) que representaria en joan per exemple. Per la versió
+de PDDL que farem servir ens podem quedar en la representació de les constants que hem donat.
+
+
+                                                        1
+3    Fórmules
+Un àtom és un predicat aplicat a algun objecte o variable. Exemples:
+
+    • Humà(joan) : “en joan és humà”
+
+    • M ortal(joan) : “en joan és mortal”
+
+    • M ajor(x, 0) : “x és més gran que 0”
+
+Els àtoms que no tene variables com a paràmetres són ground ( per exemple M ortal(joan).
+    D’acord amb la interpretació o significat que donguem als objectes i als predicats els àtoms
+poden ser avaluats a cert o fals (ho desenvolupem més endavant).
+    Un àtom és la forma més petita que pot prendre una fórmula. La resta de fórmules les cons-
+truirem a partir d’àtoms i combinacions lògiques d’aquests amb operadors i quantificador.
+
+Operadors Lògics
+    • La negació expressa que una fórmula no és certa.
+
+                                                        ¬P
+
+      Significa “no P ”. Si P és vertadera, ¬P és falsa, i viceversa.
+
+    • La conjunció expressa que dues fórmules són vertaderes al mateix temps.
+
+                                                    P ∧Q
+
+      Significa “P i Q”. Aquesta fórmula és vertadera només si totes dues fórmules ho són.
+
+    • La disjunció indica que almenys una de les fórmules és vertadera.
+
+                                                    P ∨Q
+
+      Significa “P o Q”. És vertadera si com a mı́nim una de les dues és vertadera.
+
+    • La implicació representa una relació de conseqüència.
+
+                                                    P →Q
+
+      Es llegeix “si P , aleshores Q”. Només és falsa quan P és vertadera i Q és falsa.
+
+    • El bicondicional expressa equivalència lògica.
+
+                                                    P ↔Q
+
+      Significa “P si i només si Q”. Això implica que totes dues fórmules tenen el mateix valor de
+      veritat.
+
+
+
+
+                                                    2
+Quantificadors
+Els quantificadors permeten expressar afirmacions generals sobre elements del domini.
+
+    • El quantificador universal s’escriu:
+
+                                                         ∀x
+
+      i es llegeix “per a tot x”.
+      Exemple:
+
+                                          ∀x(Humà(x) → M ortal(x))
+
+      Aquesta fórmula significa: “tots els humans són mortals”.
+
+    • El quantificador existencial s’escriu:
+
+                                                         ∃x
+
+      i es llegeix “existeix algun x”.
+      Exemple:
+
+                                         ∃x(Estudiant(x) ∧ T reballa(x))
+
+      Aquesta expressió significa: “existeix un estudiant que treballa”.
+
+
+4    Interpretacions
+Per poder determinar si una fórmula és vertadera o falsa, cal especificar una interpretació.
+   Una interpretació consisteix en:
+
+    • Un domini d’objectes.
+
+    • Una assignació de significat a les constants.
+
+    • Una assignació de relacions o propietats als predicats.
+
+    És a dir, la interpretació indica a què es refereixen exactament els sı́mbols del llenguatge.
+
+Exemple d’interpretació
+Considerem el següent llenguatge:
+
+    • Predicat: P are(x, y)
+
+    • Constants: Anna, Joan, M aria
+
+Suposem la interpretació següent:
+
+    • Domini: {Anna, Joan, M aria}
+
+                                                     3
+    • Les assignacions de les constants són les òbvies en aquest exemple
+
+    • I la relació P are(x, y) farem que vulgui dir “x pare de y”, que en el nostre domini serà, P are:
+      {(Joan, M aria)}
+
+    Això vol dir que Joan és pare de Maria i no hi ha cap altra relació de paternitat en el domini.
+
+
+5    Avaluació de fórmules
+Donada una interpretació, podem determinar si una fórmula és vertadera o falsa.
+
+Exemple 1
+Considerem la fórmula:
+
+                                          ∃x P are(x, M aria)
+    En la interpretació anterior, aquesta fórmula és vertadera, perquè Joan és pare de Maria.
+
+Exemple 2
+Considerem ara:
+
+                                          ∀x P are(x, M aria)
+    En la interpretació anterior, aquesta fórmula és falsa, perquè no tots els elements del domini
+són pare de Maria.
+
+Exemple 3
+Considerem:
+
+                                            ∃x∃y P are(x, y)
+   En la interpretació anterior, aquesta fórmula és vertadera, perquè existeix almenys una relació
+de paternitat en el domini.
+
+
+6    Conclusió
+La lògica de primer ordre permet descriure de manera formal propietats d’objectes i relacions
+entre ells. Els seus principals components són els predicats, les variables, els operadors lògics i els
+quantificadors.
+    Per determinar si una fórmula és vertadera o falsa, és necessari definir una interpretació que
+especifiqui el domini i el significat dels sı́mbols del llenguatge. Un cop fixada aquesta interpretació,
+les fórmules poden ser avaluades segons les regles de la lògica.
+    En PDDL la representació ADL ens permet expressar en mon i les accions en aquest formalisme.
+
+
+
+
+                                                    4
+
