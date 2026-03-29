@@ -1,4 +1,4 @@
-(define (problem pb_simplea)
+(define (problem pb_simpleb)
     (:domain magabot_simple)
     
     (:objects

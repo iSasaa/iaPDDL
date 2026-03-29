@@ -1,5 +1,5 @@
-(define (problem pb_simplec)
-    (:domain magabot_simple)
+(define (problem pb_avancat1a)
+    (:domain magabot_avancat)
     
     (:objects
         loc_1_1 loc_1_2 loc_1_3 loc_1_4 loc_1_5 loc_1_6
@@ -10,7 +10,7 @@
         loc_6_1 loc_6_2 loc_6_3 loc_6_4 loc_6_5 loc_6_6 - loc
         
         r1 r2 - robot
-        pkg1 pkg2 pkg3 - paquet
+        pkg1 pkg2 pkg3 pkg4 - paquet
         e1 e2 - estanteria
         d - dispensador
     )
@@ -60,29 +60,38 @@
         (adjacent loc_6_5 loc_5_5) (adjacent loc_6_5 loc_6_4) (adjacent loc_6_5 loc_6_6)
         (adjacent loc_6_6 loc_5_6) (adjacent loc_6_6 loc_6_5)
 
-        ;; --- Entitats Bloquejades (Segons la imatge del Sector Alfa) ---
-        (bloquejada loc_1_6)
-        (bloquejada loc_2_2) (bloquejada loc_2_3) (bloquejada loc_2_4) (bloquejada loc_2_5) (bloquejada loc_2_6)
-        (bloquejada loc_3_2) (bloquejada loc_3_4) (bloquejada loc_3_6)
-        (bloquejada loc_4_2) (bloquejada loc_4_4) (bloquejada loc_4_6)
-        (bloquejada loc_6_2) (bloquejada loc_6_4) (bloquejada loc_6_5)
+        ;; --- Entitats Bloquejades (Bahia 66) ---
+        (bloquejada loc_2_2) (bloquejada loc_2_3) (bloquejada loc_2_5)
+        (bloquejada loc_3_3) (bloquejada loc_3_4) (bloquejada loc_3_5)
+        (bloquejada loc_4_1) (bloquejada loc_4_3)
+        (bloquejada loc_5_5) (bloquejada loc_5_6)
+        (bloquejada loc_6_1) (bloquejada loc_6_3)
+        ;; Estanteries, Dispensador i Carregador també bloquegen
+        (bloquejada loc_2_4) (bloquejada loc_5_1) (bloquejada loc_6_6) (bloquejada loc_6_2)
 
         ;; --- Posicions inicials ---
-        (at r1 loc_6_1) (at r2 loc_5_5)
-        (at e1 loc_2_2) (at e2 loc_2_5)
-        (at d loc_4_4)
+        (at r1 loc_1_6) (at r2 loc_4_2)
+        (at e1 loc_2_4) (at e2 loc_5_1)
+        (at d loc_6_6)
+        (es-carregador loc_6_2)
         
         ;; --- Piles (Stack) ---
-        (at pkg2 loc_2_2) (on pkg2 e1)
-        (at pkg1 loc_2_2) (on pkg1 pkg2) (clear pkg1)
-        (at pkg3 loc_2_5) (on pkg3 e2) (clear pkg3)
+        (at pkg1 loc_2_4) (on pkg1 e1)
+        (at pkg2 loc_2_4) (on pkg2 pkg1)
+        (at pkg3 loc_2_4) (on pkg3 pkg2)
+        (at pkg4 loc_2_4) (on pkg4 pkg3) (clear pkg4)
         
-        (clear r1) (clear r2)
+        (clear r1) (clear r2) (clear e2)
         
-        ;; --- Control d'Ordre ---
-        (esperant-dispensar pkg2)
-        (proxim-paquet pkg2 pkg3)
+        ;; --- Atributs Numèrics ---
+        (battery r1) 20 (max-battery r1) 50 (total-weight r1) 0 (max-weight r1) 10
+        (battery r2) 20 (max-battery r2) 50 (total-weight r2) 0 (max-weight r2) 10
+        
+        (weight pkg1) 4 (weight pkg2) 3 (weight pkg3) 2 (weight pkg4) 1
+        
+        (total-energy-spent) 0
     )
 
-    (:goal (and (dispensat pkg2) (dispensat pkg3)))
+    (:goal (and (dispensat pkg1) (dispensat pkg2) (dispensat pkg3)))
+    (:metric minimize (total-energy-spent))
 )
