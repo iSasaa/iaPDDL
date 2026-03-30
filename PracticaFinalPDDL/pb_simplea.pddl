@@ -60,7 +60,7 @@
         (adjacent loc_6_5 loc_5_5) (adjacent loc_6_5 loc_6_4) (adjacent loc_6_5 loc_6_6)
         (adjacent loc_6_6 loc_5_6) (adjacent loc_6_6 loc_6_5)
 
-        ;; --- Entitats Bloquejades (Segons la imatge del Sector Alfa) ---
+        ;; --- Entitats Bloquejades ---
         (bloquejada loc_1_6)
         (bloquejada loc_2_2) (bloquejada loc_2_3) (bloquejada loc_2_4) (bloquejada loc_2_5) (bloquejada loc_2_6)
         (bloquejada loc_3_2) (bloquejada loc_3_4) (bloquejada loc_3_6)

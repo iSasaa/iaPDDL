@@ -42,75 +42,76 @@
 
     ;; Agafar paquet
     (:action agafar
-    :parameters (?r - robot ?p - paquet ?under - obj ?r-top - obj ?loc-r - loc ?loc-e - loc ?est - estanteria)
-    :precondition (and 
-        (at ?r ?loc-r)
-        (adjacent ?loc-r ?loc-e)
-        (at ?est ?loc-e) 
-        (at ?p ?loc-e)
-        (on ?p ?under)
-        (clear ?p)
-        (clear ?r-top)
-        (or (on ?r-top ?r) (= ?r-top ?r)) 
+        :parameters (?r - robot ?p - paquet ?under - obj ?r-top - obj ?loc-r - loc ?loc-e - loc ?est - estanteria)
+        :precondition (and 
+            (at ?r ?loc-r)
+            (adjacent ?loc-r ?loc-e)
+            (at ?est ?loc-e) 
+            (at ?p ?loc-e)
+            (on ?p ?under)
+            (clear ?p)
+            (clear ?r-top)
+            (or (on ?r-top ?r) (= ?r-top ?r)) 
+        )
+        :effect (and 
+            (not (on ?p ?under))
+            (clear ?under)
+            (not (at ?p ?loc-e)) 
+            (on ?p ?r-top)
+            (not (clear ?r-top))
+            (clear ?p)
+            (porta ?r ?p)
+        )
     )
-    :effect (and 
-        (not (on ?p ?under))
-        (clear ?under)
-        (not (at ?p ?loc-e)) 
-        (on ?p ?r-top)
-        (not (clear ?r-top))
-        (clear ?p)
-        (porta ?r ?p)
-    )
-)
 
     ;; Deixar paquet
     (:action deixar
-    :parameters (?r - robot ?p - paquet ?r-under - obj ?e-top - obj ?loc-r - loc ?loc-e - loc ?est - estanteria)
-    :precondition (and 
-        (at ?r ?loc-r)
-        (porta ?r ?p) ;; Comprovem que el porta, sense dependre de la casella
-        (on ?p ?r-under)
-        (clear ?p)
-        (adjacent ?loc-r ?loc-e)
-        (at ?est ?loc-e) ;; Assegurem que deixem en una estanteria
-        (at ?e-top ?loc-e)
-        (clear ?e-top)
+        :parameters (?r - robot ?p - paquet ?r-under - obj ?e-top - obj ?loc-r - loc ?loc-e - loc ?est - estanteria)
+        :precondition (and 
+            (at ?r ?loc-r)
+            (porta ?r ?p) ;; Comprovem que el porta, sense dependre de la casella
+            (on ?p ?r-under)
+            (clear ?p)
+            (adjacent ?loc-r ?loc-e)
+            (at ?est ?loc-e) ;; Assegurem que deixem en una estanteria
+            (at ?e-top ?loc-e)
+            (clear ?e-top)
+        )
+        :effect (and 
+            (not (on ?p ?r-under))
+            (clear ?r-under)
+            (not (porta ?r ?p)) ;; Ja no el porta
+            (on ?p ?e-top)
+            (not (clear ?e-top))
+            (clear ?p)
+            (at ?p ?loc-e) ;; El paquet torna a existir a la graella de l'estanteria
+        )
     )
-    :effect (and 
-        (not (on ?p ?r-under))
-        (clear ?r-under)
-        (not (porta ?r ?p)) ;; Ja no el porta
-        (on ?p ?e-top)
-        (not (clear ?e-top))
-        (clear ?p)
-        (at ?p ?loc-e) ;; El paquet torna a existir a la graella de l'estanteria
-    )
-)
 
-(:action dispensar
-    :parameters (?r - robot ?p - paquet ?r-under - obj ?loc-r - loc ?loc-d - loc ?d - dispensador)
-    :precondition (and 
-        (at ?r ?loc-r)
-        (porta ?r ?p) ;; Substitueix (at ?p ?loc-r)
-        (on ?p ?r-under)
-        (clear ?p)
-        (adjacent ?loc-r ?loc-d)
-        (at ?d ?loc-d)
-        (esperant-dispensar ?p)
-    )
-    :effect (and 
-        (not (on ?p ?r-under))
-        (clear ?r-under)
-        (not (porta ?r ?p)) ;; Ja no el porta
-        (dispensat ?p)
-        (not (clear ?p))
-        (not (esperant-dispensar ?p))
-        (forall (?next - paquet)
-            (when (proxim-paquet ?p ?next)
-                (esperant-dispensar ?next)
+    ;; Dispensar paquet
+    (:action dispensar
+        :parameters (?r - robot ?p - paquet ?r-under - obj ?loc-r - loc ?loc-d - loc ?d - dispensador)
+        :precondition (and 
+            (at ?r ?loc-r)
+            (porta ?r ?p) ;; Substitueix (at ?p ?loc-r)
+            (on ?p ?r-under)
+            (clear ?p)
+            (adjacent ?loc-r ?loc-d)
+            (at ?d ?loc-d)
+            (esperant-dispensar ?p)
+        )
+        :effect (and 
+            (not (on ?p ?r-under))
+            (clear ?r-under)
+            (not (porta ?r ?p)) ;; Ja no el porta
+            (dispensat ?p)
+            (not (clear ?p))
+            (not (esperant-dispensar ?p))
+            (forall (?next - paquet)
+                (when (proxim-paquet ?p ?next)
+                    (esperant-dispensar ?next)
+                )
             )
         )
     )
-)
 )

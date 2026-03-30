@@ -13,6 +13,7 @@
         pkg1 pkg2 pkg3 pkg4 - paquet
         e1 e2 - estanteria
         d - dispensador
+        c - carregador
     )
 
     (:init
@@ -60,20 +61,23 @@
         (adjacent loc_6_5 loc_5_5) (adjacent loc_6_5 loc_6_4) (adjacent loc_6_5 loc_6_6)
         (adjacent loc_6_6 loc_5_6) (adjacent loc_6_6 loc_6_5)
 
-        ;; --- Entitats Bloquejades (Bahia 66) ---
-        (bloquejada loc_2_2) (bloquejada loc_2_3) (bloquejada loc_2_5)
-        (bloquejada loc_3_3) (bloquejada loc_3_4) (bloquejada loc_3_5)
-        (bloquejada loc_4_1) (bloquejada loc_4_3)
-        (bloquejada loc_5_5) (bloquejada loc_5_6)
-        (bloquejada loc_6_1) (bloquejada loc_6_3)
-        ;; Estanteries, Dispensador i Carregador també bloquegen
-        (bloquejada loc_2_4) (bloquejada loc_5_1) (bloquejada loc_6_6) (bloquejada loc_6_2)
-
+        ;; --- Entitats Bloquejades (Segons la imatge de la Bahia 66) ---
+        (bloquejada loc_2_2) (bloquejada loc_2_3) (bloquejada loc_2_4) (bloquejada loc_2_5)
+        (bloquejada loc_3_3) (bloquejada loc_3_4) (bloquejada loc_3_5) 
+        (bloquejada loc_4_1) (bloquejada loc_4_3) 
+        (bloquejada loc_5_1) (bloquejada loc_5_5) (bloquejada loc_5_6)
+        (bloquejada loc_6_1) (bloquejada loc_6_2) (bloquejada loc_6_3) (bloquejada loc_6_6)
+        
         ;; --- Posicions inicials ---
-        (at r1 loc_1_6) (at r2 loc_4_2)
-        (at e1 loc_2_4) (at e2 loc_5_1)
+        ;; Robots
+        (at r1 loc_1_6) 
+        (at r2 loc_4_2) 
+        
+        ;; Estanteries, Dispensador i Carregador
+        (at e1 loc_2_4) 
+        (at e2 loc_5_1)
+        (at c loc_6_2)
         (at d loc_6_6)
-        (es-carregador loc_6_2)
         
         ;; --- Piles (Stack) ---
         (at pkg1 loc_2_4) (on pkg1 e1)
@@ -81,17 +85,30 @@
         (at pkg3 loc_2_4) (on pkg3 pkg2)
         (at pkg4 loc_2_4) (on pkg4 pkg3) (clear pkg4)
         
-        (clear r1) (clear r2) (clear e2)
+        (clear e2) (clear r1) (clear r2)
         
-        ;; --- Atributs Numèrics ---
-        (battery r1) 20 (max-battery r1) 50 (total-weight r1) 0 (max-weight r1) 10
-        (battery r2) 20 (max-battery r2) 50 (total-weight r2) 0 (max-weight r2) 10
+        ;; --- Control d'Ordre ---
+        (esperant-dispensar pkg1) (esperant-dispensar pkg2) (esperant-dispensar pkg3)
         
-        (weight pkg1) 4 (weight pkg2) 3 (weight pkg3) 2 (weight pkg4) 1
+        ;; Pesos dels paquets
+        (= (pes pkg1) 4)
+        (= (pes pkg2) 3)
+        (= (pes pkg3) 2)
+        (= (pes pkg4) 1)
         
-        (total-energy-spent) 0
+        ;; Càrrega i Capacitat
+        (= (carrega-actual r1) 0) (= (capacitat-maxima r1) 10)
+        (= (carrega-actual r2) 0) (= (capacitat-maxima r2) 10)
+        
+        ;; Bateria
+        (= (bateria-actual r1) 20) (= (bateria-maxima r1) 50)
+        (= (bateria-actual r2) 20) (= (bateria-maxima r2) 50)
+        
+        ;; Mètrica
+        (= (energia-total) 0)
     )
 
     (:goal (and (dispensat pkg1) (dispensat pkg2) (dispensat pkg3)))
-    (:metric minimize (total-energy-spent))
+    
+    (:metric minimize (energia-total))
 )
