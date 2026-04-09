@@ -1,4 +1,4 @@
-(define (problem pb_avancat1a)
+(define (problem pb_avancat1c)
     (:domain magabot_avancat)
     
     (:objects
@@ -81,17 +81,18 @@
         ;; Atributs
         (= (pes pkg1) 4) (= (pes pkg2) 3) (= (pes pkg3) 2) (= (pes pkg4) 1)
         
-        ;; Capacitat Limitada de 10 Kilos per als robots
-        (= (carrega-actual r1) 0) (= (capacitat-maxima r1) 10)
-        (= (bateria-actual r1) 20) (= (bateria-maxima r1) 50)
+        ;; Capacitat Limitada de 12 Kilos per als robots i bateria inicial 30
+        (= (carrega-actual r1) 0) (= (capacitat-maxima r1) 12)
+        (= (bateria-actual r1) 30) (= (bateria-maxima r1) 50)
         
-        (= (carrega-actual r2) 0) (= (capacitat-maxima r2) 10)
-        (= (bateria-actual r2) 20) (= (bateria-maxima r2) 50)
+        (= (carrega-actual r2) 0) (= (capacitat-maxima r2) 12)
+        (= (bateria-actual r2) 30) (= (bateria-maxima r2) 50)
         
-        ;; Goal
-        (esperant-dispensar pkg1)
-        (esperant-dispensar pkg2)
-        (esperant-dispensar pkg3)
+        ;; Goal logic INVERS (Dispensejament ordenat estricte i seqüencial)
+        (esperant-dispensar pkg4)
+        (proxim-paquet pkg4 pkg3)
+        (proxim-paquet pkg3 pkg2)
+        (proxim-paquet pkg2 pkg1)
 
         (= (energia-total) 0)
     )
@@ -99,7 +100,8 @@
     (:goal (and 
         (dispensat pkg1) 
         (dispensat pkg2) 
-        (dispensat pkg3)
+        (dispensat pkg3) 
+        (dispensat pkg4)
     ))
     
     (:metric minimize (energia-total))

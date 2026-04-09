@@ -16,7 +16,7 @@
     )
 
     (:init
-        ;; --- Adjacències ---
+        ;; --- ADJACÈNCIES ---
         ;; Fila 1
         (adjacent loc_1_1 loc_1_2) (adjacent loc_1_1 loc_2_1)
         (adjacent loc_1_2 loc_1_1) (adjacent loc_1_2 loc_1_3) (adjacent loc_1_2 loc_2_2)
@@ -60,26 +60,28 @@
         (adjacent loc_6_5 loc_5_5) (adjacent loc_6_5 loc_6_4) (adjacent loc_6_5 loc_6_6)
         (adjacent loc_6_6 loc_5_6) (adjacent loc_6_6 loc_6_5)
 
-        ;; --- Entitats Bloquejades ---
+        ;; --- ENTITATS BLOQUEJADES ---
         (bloquejada loc_1_6)
         (bloquejada loc_2_2) (bloquejada loc_2_3) (bloquejada loc_2_4) (bloquejada loc_2_5) (bloquejada loc_2_6)
         (bloquejada loc_3_2) (bloquejada loc_3_4) (bloquejada loc_3_6)
         (bloquejada loc_4_2) (bloquejada loc_4_4) (bloquejada loc_4_6)
         (bloquejada loc_6_2) (bloquejada loc_6_4) (bloquejada loc_6_5)
 
-        ;; --- Posicions inicials ---
-        (at r1 loc_6_1) (at r2 loc_5_5)
-        (at e1 loc_2_2) (at e2 loc_2_5)
+        ;; --- POSICIONS INICIALS ---
+        (at r1 loc_6_1)
+        (at r2 loc_5_5)
+        (at e1 loc_2_2)
+        (at e2 loc_2_5)
         (at d loc_4_4)
         
-        ;; --- Piles (Stack) ---
+        ;; Stack
         (at pkg2 loc_2_2) (on pkg2 e1)
         (at pkg1 loc_2_2) (on pkg1 pkg2) (clear pkg1)
         (at pkg3 loc_2_5) (on pkg3 e2) (clear pkg3)
         
         (clear r1) (clear r2)
         
-        ;; --- Control d'Ordre ---
+        ;; Goal logic
         (esperant-dispensar pkg2)
         (proxim-paquet pkg2 pkg3)
     )
