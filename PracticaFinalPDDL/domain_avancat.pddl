@@ -29,7 +29,7 @@
         ;; Gestió de càrrega
         (pes ?p - paquet)
         (carrega-actual ?r - robot)
-        (capacitat-maxima ?r - robot)
+        (carrega-maxima ?r - robot)
         
         ;; Gestió de bateria
         (bateria-actual ?r - robot)
@@ -99,8 +99,8 @@
             (clear ?r-top)
             (or (on ?r-top ?r) (= ?r-top ?r)) 
             (> (bateria-actual ?r) 0) ;; Si no té energia no pot fer accions
-            ;; LÍMIT DE PES: La càrrega actual + el pes del paquet no pot superar la capacitat màxima
-            (<= (+ (carrega-actual ?r) (pes ?p)) (capacitat-maxima ?r))
+            ;; LÍMIT DE PES: La càrrega actual + el pes del paquet no pot superar la carrega màxima
+            (<= (+ (carrega-actual ?r) (pes ?p)) (carrega-maxima ?r))
         )
         :effect (and 
             (not (on ?p ?under))

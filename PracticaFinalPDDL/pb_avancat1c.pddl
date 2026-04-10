@@ -81,11 +81,11 @@
         ;; Atributs
         (= (pes pkg1) 4) (= (pes pkg2) 3) (= (pes pkg3) 2) (= (pes pkg4) 1)
         
-        ;; Capacitat Limitada de 12 Kilos per als robots i bateria inicial 30
-        (= (carrega-actual r1) 0) (= (capacitat-maxima r1) 12)
+        ;; Carrega Limitada de 12 Kilos per als robots i bateria inicial 30
+        (= (carrega-actual r1) 0) (= (carrega-maxima r1) 12)
         (= (bateria-actual r1) 30) (= (bateria-maxima r1) 50)
         
-        (= (carrega-actual r2) 0) (= (capacitat-maxima r2) 12)
+        (= (carrega-actual r2) 0) (= (carrega-maxima r2) 12)
         (= (bateria-actual r2) 30) (= (bateria-maxima r2) 50)
         
         ;; Goal logic INVERS (Dispensejament ordenat estricte i seqüencial)

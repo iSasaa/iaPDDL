@@ -91,10 +91,10 @@
         (= (pes pkg5) 3) (= (pes pkg6) 2)
 
         ;; Capacitat 12kg, bateria inicial 30, màxima 50
-        (= (carrega-actual r1) 0) (= (capacitat-maxima r1) 12)
+        (= (carrega-actual r1) 0) (= (carrega-maxima r1) 12)
         (= (bateria-actual r1) 30) (= (bateria-maxima r1) 50)
 
-        (= (carrega-actual r2) 0) (= (capacitat-maxima r2) 12)
+        (= (carrega-actual r2) 0) (= (carrega-maxima r2) 12)
         (= (bateria-actual r2) 30) (= (bateria-maxima r2) 50)
 
         ;; Goal logic (ordre: de més pes a menys, empat prioritzar E1)
@@ -120,7 +120,6 @@
 
     (:metric minimize (energia-total))
 )
-
 Hola bon dia Mateu, per la practica de IA ja tenim fets els fitxers de domini i problemes, pero per els avancats1 els models -planner opt-blind no ens serveixen perque tarden infinitament, he arribat a esperarme 1h i no donava cap resultat, i despres per els avancats2 en el 2a el normal si troba solucio pero en el 2b no en troba, tambe esperant 1h. entenc que podem fer servir diferents tipos de planners que ens proporciona la eina de ENHSP, ja que en el enunciat la part de lliurament ens diu:  
 exploreu ENHSP i mireu quines estratègies de solving uns poden ajudar, quins herístiecs, etc.) mostrant els plans trobats.
 A lo que entenc que entre aquests planners: sat-hmrp, sat-hadd, sat-hmax, opt-blind, opt-hrmax. Hem de justificar el perque de cada eleccio, i perque ens serveixen i funcionen alguns millor que altres no?

@@ -81,11 +81,11 @@
         ;; Atributs
         (= (pes pkg1) 4) (= (pes pkg2) 3) (= (pes pkg3) 2) (= (pes pkg4) 1)
         
-        ;; Capacitat Limitada de 8 Kilos per als robots
-        (= (carrega-actual r1) 0) (= (capacitat-maxima r1) 8)
+        ;; Carrega Limitada de 8 Kilos per als robots
+        (= (carrega-actual r1) 0) (= (carrega-maxima r1) 8)
         (= (bateria-actual r1) 20) (= (bateria-maxima r1) 50)
         
-        (= (carrega-actual r2) 0) (= (capacitat-maxima r2) 8)
+        (= (carrega-actual r2) 0) (= (carrega-maxima r2) 8)
         (= (bateria-actual r2) 20) (= (bateria-maxima r2) 50)
         
         ;; Goal logic
